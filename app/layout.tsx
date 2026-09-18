@@ -1,4 +1,3 @@
-import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter, Source_Serif_4 } from 'next/font/google'
 import './globals.css'
@@ -16,15 +15,16 @@ const sourceSerif = Source_Serif_4({
 })
 
 export const metadata: Metadata = {
-  title: 'Защита прав потребителей на маркетплейсах РК',
+  title: 'Daryn Legal — претензии к маркетплейсам',
   description:
-    'Конструктор юридических претензий к маркетплейсам (Kaspi, Wildberries, Ozon) на основе Закона РК «О защите прав потребителей».',
-  generator: 'v0.app',
+    'Конструктор готовых юридических претензий к маркетплейсам. Введите факты — система сформирует претензию со ссылками на закон.',
 }
 
 export const viewport: Viewport = {
   colorScheme: 'light',
   themeColor: '#1f6f8b',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
@@ -39,7 +39,6 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased">
         {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
   )
