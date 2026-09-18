@@ -1,14 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Scale, Home, FileSignature, Globe2, Store, BarChart3, Menu, X } from 'lucide-react'
+import { Scale, Home, FileSignature, Globe2, Store, BarChart3, Menu, X, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ClaimForm } from '@/components/claim-form'
 import { KazakhstanTab } from '@/components/kazakhstan-tab'
 import { MarketplacesTab } from '@/components/marketplaces-tab'
 import { StatisticsTab } from '@/components/statistics-tab'
+import { FeedbackSection } from '@/components/feedback-section'
 
-type TabId = 'home' | 'create' | 'kazakhstan' | 'marketplaces' | 'statistics'
+type TabId = 'home' | 'create' | 'kazakhstan' | 'marketplaces' | 'statistics' | 'feedback'
 
 const NAV_ITEMS: { id: TabId; label: string; icon: typeof Home }[] = [
   { id: 'home', label: 'Главная', icon: Home },
@@ -16,6 +17,7 @@ const NAV_ITEMS: { id: TabId; label: string; icon: typeof Home }[] = [
   { id: 'kazakhstan', label: '🇰🇿 Казахстан', icon: Globe2 },
   { id: 'marketplaces', label: 'Маркетплейсы', icon: Store },
   { id: 'statistics', label: 'Статистика', icon: BarChart3 },
+  { id: 'feedback', label: 'Отзывы', icon: Star },
 ]
 
 export function AppShell() {
@@ -112,6 +114,7 @@ export function AppShell() {
         {tab === 'kazakhstan' && <KazakhstanTab />}
         {tab === 'marketplaces' && <MarketplacesTab />}
         {tab === 'statistics' && <StatisticsTab />}
+        {tab === 'feedback' && <FeedbackSection />}
       </div>
 
       <footer className="border-t border-border bg-card mt-12">
