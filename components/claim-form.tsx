@@ -18,6 +18,9 @@ import {
   Loader2,
   FileSignature,
   MessageCircleQuestion,
+  Share2,
+  Check,
+  Copy,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -86,6 +89,9 @@ export function ClaimForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showChat, setShowChat] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [shareCopied, setShareCopied] = useState(false)
+  const [saving, setSaving] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
   function update<K extends keyof ClaimData>(key: K, value: ClaimData[K]) {
@@ -149,6 +155,27 @@ export function ClaimForm() {
       }
 
       setResult(json.claim || '')
+
+      setSaving(true)
+      try {
+        const saveRes = await fetch('/api/claims', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            claimText: json.claim,
+            country: data.country,
+            marketplace: effectiveMarketplace,
+            problemType: data.problemType,
+          }),
+        })
+        const saveJson = await saveRes.json()
+        if (saveJson?.id) {
+          setShareUrl(`${window.location.origin}/claim/${saveJson.id}`)
+        }
+      } catch {
+      } finally {
+        setSaving(false)
+      }
     } catch (err) {
       if ((err as Error).name !== 'AbortError') {
         setError((err as Error).message || 'Произошла ошибка. Попробуйте ещё раз.')
@@ -379,13 +406,52 @@ export function ClaimForm() {
 
       {result && !isLoading && (
         <div className="flex flex-col gap-3 sm:flex-row">
+          {shareUrl && (
+            <div className="flex flex-1 flex-col gap-2 rounded-xl border border-border bg-card p-3 shadow-sm sm:flex-row sm:items-center">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Share2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="font-medium text-foreground">Ссылка на претензию:</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={shareUrl}
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                  className="flex-1 rounded-lg border border-input bg-background px-2.5 py-2 text-xs text-foreground outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareUrl)
+                    setShareCopied(true)
+                    setTimeout(() => setShareCopied(false), 2000)
+                  }}
+                  className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
+                >
+                  {shareCopied ? (
+                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                  )}
+                  {shareCopied ? 'Готово' : 'Копировать'}
+                </button>
+              </div>
+            </div>
+          )}
+          {saving && (
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              Сохраняем...
+            </div>
+          )}
           <button
             type="button"
             onClick={() => setShowChat(!showChat)}
             className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-secondary active:translate-y-px"
           >
             <MessageCircleQuestion className="h-5 w-5" aria-hidden="true" />
-            {showChat ? 'Скрыть чат' : 'Задать вопрос AI'}
+            {showChat ? 'Скрыть чат' : 'Консультация AI'}
           </button>
         </div>
       )}

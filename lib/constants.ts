@@ -121,7 +121,7 @@ export const KZ_OFFICIAL_SERVICES: { title: string; description: string; url: st
   {
     title: 'Комитет по защите прав потребителей МНЭ РК',
     description: 'Государственный орган по защите прав потребителей Казахстана. Приём обращений и жалоб.',
-    url: 'https://www.gov.kz/memleket/entities/mne/activities/20',
+    url: 'https://www.gov.kz/memleket/entities/mne',
     category: 'consumer',
   },
   {
@@ -133,13 +133,13 @@ export const KZ_OFFICIAL_SERVICES: { title: string; description: string; url: st
   {
     title: 'Антимонопольный комитет РК',
     description: 'Защита конкуренции и противодействие недобросовестной конкуренции, включая контрафакт.',
-    url: 'https://www.gov.kz/memleket/entities/qaztrade',
+    url: 'https://qaztrade.gov.kz/',
     category: 'counterfeit',
   },
   {
-    title: 'Департамент внутренних дел РК',
+    title: 'Портал полиции РК',
     description: 'Заявления о мошенничестве, контрафакте и других правонарушениях со стороны продавцов.',
-    url: 'https://www.gov.kz/memleket/entities/mvd',
+    url: 'https://police.kz/',
     category: 'counterfeit',
   },
   {
