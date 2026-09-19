@@ -1,19 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { Scale, Home, FileSignature, Globe2, Store, BarChart3, Menu, X, Star } from 'lucide-react'
+import { Scale, Home, FileSignature, Globe2, Store, BarChart3, Menu, X, Star, ClipboardList } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ClaimForm } from '@/components/claim-form'
 import { KazakhstanTab } from '@/components/kazakhstan-tab'
 import { MarketplacesTab } from '@/components/marketplaces-tab'
 import { StatisticsTab } from '@/components/statistics-tab'
 import { FeedbackSection } from '@/components/feedback-section'
+import { WhatToDoTab } from '@/components/what-to-do-tab'
 
-type TabId = 'home' | 'create' | 'kazakhstan' | 'marketplaces' | 'statistics' | 'feedback'
+type TabId = 'home' | 'create' | 'what-to-do' | 'kazakhstan' | 'marketplaces' | 'statistics' | 'feedback'
 
 const NAV_ITEMS: { id: TabId; label: string; icon: typeof Home }[] = [
   { id: 'home', label: 'Главная', icon: Home },
   { id: 'create', label: 'Создать претензию', icon: FileSignature },
+  { id: 'what-to-do', label: 'Что делать?', icon: ClipboardList },
   { id: 'kazakhstan', label: '🇰🇿 Казахстан', icon: Globe2 },
   { id: 'marketplaces', label: 'Маркетплейсы', icon: Store },
   { id: 'statistics', label: 'Статистика', icon: BarChart3 },
@@ -111,6 +113,7 @@ export function AppShell() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {tab === 'home' && <HomeView onStart={() => switchTab('create')} />}
         {tab === 'create' && <ClaimForm />}
+        {tab === 'what-to-do' && <WhatToDoTab />}
         {tab === 'kazakhstan' && <KazakhstanTab />}
         {tab === 'marketplaces' && <MarketplacesTab />}
         {tab === 'statistics' && <StatisticsTab />}
