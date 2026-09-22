@@ -1,8 +1,15 @@
 'use client'
 
 import { use, useState, useEffect } from 'react'
-import { Scale, Loader2, FileDown, FileType, Copy, Check, ArrowLeft } from 'lucide-react'
+import { Scale, Loader2, FileDown, FileType, Copy, Check, ArrowLeft, ExternalLink, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const SUBMIT_LINKS = [
+  { label: 'eGov.kz', url: 'https://www.egov.kz/', desc: 'Портал госуслуг Казахстана' },
+  { label: 'eOtinish', url: 'https://eotinish.kz/', desc: 'Обращения в госорганы РК' },
+  { label: '1506', url: 'tel:1506', desc: 'Защита прав потребителей РК' },
+  { label: 'Роспотребнадзор', url: 'https://www.rospotrebnadzor.ru/', desc: 'Защита прав потребителей РФ' },
+]
 
 type ClaimData = {
   id: string
@@ -171,7 +178,7 @@ ${paragraphs}
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
               <Scale className="h-4 w-4" aria-hidden="true" />
             </span>
-            <span className="text-base font-bold">Daryn Legal</span>
+            <span className="text-base font-bold">Jardem AI</span>
           </div>
         </div>
       </header>
@@ -242,6 +249,33 @@ ${paragraphs}
             )}
             {copied ? 'Скопировано' : 'Скопировать'}
           </button>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-border bg-card p-5 shadow-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <Send className="h-4 w-4 text-primary" aria-hidden="true" />
+            <h4 className="text-sm font-semibold text-foreground">Отправить претензию</h4>
+          </div>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Скопируйте текст претензии и вставьте его на официальном сервисе вашей страны.
+          </p>
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {SUBMIT_LINKS.map((link) => (
+              <a
+                key={link.label}
+                href={link.url}
+                target={link.url.startsWith('tel:') ? undefined : '_blank'}
+                rel={link.url.startsWith('tel:') ? undefined : 'noopener noreferrer'}
+                className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-4 py-3 transition hover:border-primary/50 hover:bg-secondary"
+              >
+                <div>
+                  <span className="text-sm font-medium text-foreground">{link.label}</span>
+                  <p className="text-xs text-muted-foreground">{link.desc}</p>
+                </div>
+                <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </main>

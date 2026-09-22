@@ -1,5 +1,10 @@
 import { AppShell } from '@/components/app-shell'
+import { LangProvider } from '@/lib/lang'
 
 export default function Page() {
-  return <AppShell />
+  return (
+    <LangProvider>
+      <AppShell />
+    </LangProvider>
+  )
 }

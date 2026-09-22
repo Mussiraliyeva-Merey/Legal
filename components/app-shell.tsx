@@ -1,20 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import { Scale, Home, FileSignature, Globe2, Store, BarChart3, Menu, X, Star, ClipboardList } from 'lucide-react'
+import { Scale, Home, FileSignature, Globe2, Store, BarChart3, Menu, X, Star, ClipboardList, Bot, Languages } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLang, type Lang, LANG_NAMES, LANG_FLAGS } from '@/lib/lang'
 import { ClaimForm } from '@/components/claim-form'
 import { KazakhstanTab } from '@/components/kazakhstan-tab'
 import { MarketplacesTab } from '@/components/marketplaces-tab'
 import { StatisticsTab } from '@/components/statistics-tab'
 import { FeedbackSection } from '@/components/feedback-section'
 import { WhatToDoTab } from '@/components/what-to-do-tab'
+import { AiAssistantTab } from '@/components/ai-assistant-tab'
 
-type TabId = 'home' | 'create' | 'what-to-do' | 'kazakhstan' | 'marketplaces' | 'statistics' | 'feedback'
+type TabId = 'home' | 'create' | 'ai-assistant' | 'what-to-do' | 'kazakhstan' | 'marketplaces' | 'statistics' | 'feedback'
 
 const NAV_ITEMS: { id: TabId; label: string; icon: typeof Home }[] = [
   { id: 'home', label: 'Главная', icon: Home },
   { id: 'create', label: 'Создать претензию', icon: FileSignature },
+  { id: 'ai-assistant', label: 'AI-помощник', icon: Bot },
   { id: 'what-to-do', label: 'Что делать?', icon: ClipboardList },
   { id: 'kazakhstan', label: '🇰🇿 Казахстан', icon: Globe2 },
   { id: 'marketplaces', label: 'Маркетплейсы', icon: Store },
@@ -23,8 +26,10 @@ const NAV_ITEMS: { id: TabId; label: string; icon: typeof Home }[] = [
 ]
 
 export function AppShell() {
+  const { lang, setLang, t } = useLang()
   const [tab, setTab] = useState<TabId>('home')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [langMenuOpen, setLangMenuOpen] = useState(false)
 
   function switchTab(id: TabId) {
     setTab(id)
@@ -44,7 +49,7 @@ export function AppShell() {
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
                 <Scale className="h-5 w-5" aria-hidden="true" />
               </span>
-              <span className="text-lg font-bold tracking-tight">Daryn Legal</span>
+              <span className="text-lg font-bold tracking-tight">Jardem AI</span>
             </button>
 
             <nav className="hidden md:flex items-center gap-1">
@@ -68,6 +73,36 @@ export function AppShell() {
                 )
               })}
             </nav>
+
+            <div className="hidden md:flex items-center gap-2">
+              <div className="relative">
+                <button
+                  onClick={() => setLangMenuOpen(!langMenuOpen)}
+                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-medium text-primary-foreground/80 transition hover:bg-primary-foreground/10"
+                >
+                  <Languages className="h-4 w-4" aria-hidden="true" />
+                  {LANG_FLAGS[lang]}
+                  <span className="text-xs">{LANG_NAMES[lang]}</span>
+                </button>
+                {langMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-36 rounded-lg border border-border bg-card shadow-lg z-50">
+                    {(Object.keys(LANG_NAMES) as Lang[]).map((l) => (
+                      <button
+                        key={l}
+                        onClick={() => { setLang(l); setLangMenuOpen(false) }}
+                        className={cn(
+                          'flex w-full items-center gap-2 px-3 py-2 text-sm transition first:rounded-t-lg last:rounded-b-lg',
+                          lang === l ? 'bg-primary/5 text-primary font-medium' : 'text-foreground hover:bg-secondary',
+                        )}
+                      >
+                        <span>{LANG_FLAGS[l]}</span>
+                        {LANG_NAMES[l]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -105,6 +140,23 @@ export function AppShell() {
                   </button>
                 )
               })}
+              <div className="mt-2 flex items-center gap-2 border-t border-primary-foreground/20 pt-3">
+                {(Object.keys(LANG_NAMES) as Lang[]).map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => setLang(l)}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition',
+                      lang === l
+                        ? 'bg-accent text-accent-foreground'
+                        : 'text-primary-foreground/80 hover:bg-primary-foreground/10',
+                    )}
+                  >
+                    <span>{LANG_FLAGS[l]}</span>
+                    {LANG_NAMES[l]}
+                  </button>
+                ))}
+              </div>
             </div>
           </nav>
         )}
@@ -113,6 +165,7 @@ export function AppShell() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {tab === 'home' && <HomeView onStart={() => switchTab('create')} />}
         {tab === 'create' && <ClaimForm />}
+        {tab === 'ai-assistant' && <AiAssistantTab onGoToClaim={() => switchTab('create')} />}
         {tab === 'what-to-do' && <WhatToDoTab />}
         {tab === 'kazakhstan' && <KazakhstanTab />}
         {tab === 'marketplaces' && <MarketplacesTab />}

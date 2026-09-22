@@ -15,7 +15,7 @@ const sourceSerif = Source_Serif_4({
 })
 
 export const metadata: Metadata = {
-  title: 'Daryn Legal — претензии к маркетплейсам',
+  title: 'Jardem AI — претензии к маркетплейсам',
   description:
     'Конструктор готовых юридических претензий к маркетплейсам. Введите факты — система сформирует претензию со ссылками на закон.',
 }
