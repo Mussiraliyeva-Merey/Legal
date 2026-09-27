@@ -157,7 +157,8 @@ export async function POST(req: Request) {
             ],
             generationConfig: {
               temperature: 0.4,
-              maxOutputTokens: 8192,
+              maxOutputTokens: 16384,
+              thinkingConfig: { thinkingLevel: 'low' },
             },
           }),
           signal: controller.signal,
@@ -192,15 +193,25 @@ export async function POST(req: Request) {
 
     const geminiData = await geminiResponse.json()
     const text =
-      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ??
-      geminiData?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text).join('') ??
+      geminiData?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || '').join('') ??
+      
       ''
+
+    if (geminiData?.candidates?.[0]?.finishReason && geminiData.candidates[0].finishReason !== 'STOP') {
+      console.error('[generate] incomplete response:', geminiData.candidates[0].finishReason)
+      return Response.json({ error: 'Претензия сформировалась не полностью. Попробуйте ещё раз.' }, { status: 502 })
+    }
 
     if (!text || text.trim().length === 0) {
       return Response.json(
         { error: 'Получен пустой ответ. Попробуйте переформулировать описание.' },
         { status: 502 },
       )
+    }
+
+    if (!/Дата\s*:/i.test(text) || !/Подпись\s*:/i.test(text)) {
+      console.error('[generate] missing final section')
+      return Response.json({ error: 'Претензия сформировалась не полностью. Попробуйте ещё раз.' }, { status: 502 })
     }
 
     return Response.json({ claim: text })
