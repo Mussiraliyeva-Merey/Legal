@@ -140,7 +140,7 @@ export async function POST(req: Request) {
     let geminiResponse: Response
     try {
       geminiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -149,6 +149,7 @@ export async function POST(req: Request) {
             generationConfig: {
               temperature: 0.5,
               maxOutputTokens: 4096,
+              thinkingConfig: { thinkingLevel: 'low' },
             },
           }),
           signal: controller.signal,
@@ -181,8 +182,8 @@ export async function POST(req: Request) {
 
     const geminiData = await geminiResponse.json()
     const text =
-      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ??
-      geminiData?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text).join('') ??
+      (geminiData?.candidates?.[0]?.content?.parts ?? []).filter((p: { text?: string; thought?: boolean }) => !p.thought && typeof p.text === 'string').map((p: { text: string }) => p.text).join('') ??
+      
       ''
 
     if (!text || text.trim().length === 0) {
