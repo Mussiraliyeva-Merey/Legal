@@ -52,8 +52,8 @@ export function StatisticsTab() {
           <h2 className="text-xl font-bold text-foreground">Статистика проблем</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Реальная обезличенная статистика по типам проблем. Без личных данных — только тип
-          проблемы, страна и маркетплейс.
+          Реальная обезличенная статистика по типам проблем. Без личных данных — только категория
+          проблемы и количество обращений.
         </p>
       </div>
 
@@ -120,8 +120,7 @@ export function StatisticsTab() {
       <div className="rounded-xl border border-border bg-secondary/30 p-4">
         <p className="text-xs leading-relaxed text-muted-foreground">
           Статистика ведётся в обезличенном виде. Мы не сохраняем ФИО, телефон, email, адрес, номер
-          заказа или текст претензии. Записывается только тип выбранной проблемы, страна и
-          маркетплейс.
+          заказа или текст претензии. Записывается только техническая категория проблемы.
         </p>
       </div>
     </div>

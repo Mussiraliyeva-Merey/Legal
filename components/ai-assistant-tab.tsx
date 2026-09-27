@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { useLang, type Lang } from '@/lib/lang'
 import { LegalDictionary } from '@/components/legal-dictionary'
 import { HowToUse } from '@/components/how-to-use'
+import { ReviewPrompt } from '@/components/review-prompt'
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
@@ -59,6 +60,11 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
   const [showDict, setShowDict] = useState(false)
   const [showHowTo, setShowHowTo] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const sessionRef = useRef<string>(crypto.randomUUID())
+  const reviewKeyRef = useRef<string>(crypto.randomUUID())
+  const recordedRef = useRef(new Set<string>())
+  const [consultationDone, setConsultationDone] = useState(false)
+  const [showReview, setShowReview] = useState(true)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -86,6 +92,10 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
       const json = await res.json()
       if (!res.ok) throw new Error(json?.error || 'Не удалось получить ответ.')
       setMessages([...newMessages, { role: 'assistant', content: json.reply }])
+      if (json.problemType && !recordedRef.current.has(json.problemType)) {
+        recordedRef.current.add(json.problemType)
+        fetch('/api/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ problemType: json.problemType, sessionId: sessionRef.current }) }).catch(() => {})
+      }
     } catch (err) {
       setError((err as Error).message || 'Произошла ошибка. Попробуйте ещё раз.')
     } finally {
@@ -260,6 +270,10 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
               ))}
             </div>
           )}
+          {messages.length >= 2 && !consultationDone && (
+            <button type="button" onClick={() => setConsultationDone(true)} className="self-start rounded-lg border border-primary px-4 py-2 text-sm font-medium text-primary">Завершить консультацию</button>
+          )}
+          {consultationDone && showReview && <ReviewPrompt source="ai_assistant" submissionKey={reviewKeyRef.current} title="Была ли полезна консультация?" onDone={() => setShowReview(false)} />}
         </div>
 
         {/* Sidebar */}

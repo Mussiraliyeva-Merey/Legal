@@ -32,6 +32,7 @@ import {
 } from '@/lib/constants'
 import { ResultPanel } from '@/components/result-panel'
 import { AiChat } from '@/components/ai-chat'
+import { ReviewPrompt } from '@/components/review-prompt'
 
 const PROBLEM_ICONS: Record<string, LucideIcon> = {
   shield: ShieldAlert,
@@ -93,6 +94,9 @@ export function ClaimForm() {
   const [shareCopied, setShareCopied] = useState(false)
   const [saving, setSaving] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+  const sessionRef = useRef<string>(crypto.randomUUID())
+  const reviewKeyRef = useRef<string>(crypto.randomUUID())
+  const [showReview, setShowReview] = useState(true)
 
   function update<K extends keyof ClaimData>(key: K, value: ClaimData[K]) {
     setData((prev) => ({ ...prev, [key]: value }))
@@ -121,8 +125,7 @@ export function ClaimForm() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             problemType: data.problemType,
-            country: data.country,
-            marketplace: effectiveMarketplace,
+            sessionId: sessionRef.current,
           }),
         }).catch(() => {})
       }
@@ -402,6 +405,10 @@ export function ClaimForm() {
 
       {result && (
         <ResultPanel result={result} isLoading={isLoading} />
+      )}
+
+      {result && !isLoading && showReview && (
+        <ReviewPrompt source="complaint" submissionKey={reviewKeyRef.current} title="Как вам результат?" onDone={() => setShowReview(false)} />
       )}
 
       {result && !isLoading && (

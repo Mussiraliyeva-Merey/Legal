@@ -8,7 +8,7 @@ type Review = {
   id: string
   rating: number
   comment: string | null
-  name: string | null
+  source: 'complaint' | 'ai_assistant'
   created_at: string
 }
 
@@ -23,7 +23,8 @@ export function FeedbackSection() {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [comment, setComment] = useState('')
-  const [name, setName] = useState('')
+  const [distribution, setDistribution] = useState<Record<string, number>>({})
+  const [submissionKey] = useState(() => crypto.randomUUID())
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,6 +40,7 @@ export function FeedbackSection() {
       setReviews(json.reviews || [])
       setAverage(json.average || 0)
       setTotal(json.total || 0)
+      setDistribution(json.distribution || {})
     } catch (err) {
       console.error('[reviews] load error:', err)
     } finally {
@@ -59,7 +61,7 @@ export function FeedbackSection() {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating, comment, name }),
+        body: JSON.stringify({ rating, comment, source: 'complaint', submissionKey }),
       })
 
       const json = await res.json()
@@ -72,7 +74,6 @@ export function FeedbackSection() {
       setRating(0)
       setHoverRating(0)
       setComment('')
-      setName('')
       loadReviews()
       setTimeout(() => setSubmitted(false), 4000)
     } catch (err) {
@@ -159,25 +160,15 @@ export function FeedbackSection() {
           </label>
           <textarea
             value={comment}
-            onChange={(e) => setComment(e.target.value)}
+            onChange={(e) => setComment(e.target.value.slice(0, 500))}
+            maxLength={500}
             rows={4}
             placeholder="Расскажите о вашем опыте использования сервиса..."
             className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground outline-none ring-ring/40 transition placeholder:text-muted-foreground focus:border-primary focus:ring-2"
           />
         </div>
 
-        <div className="mb-4">
-          <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-            Как вас зовут (необязательно)
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Аноним"
-            className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground outline-none ring-ring/40 transition placeholder:text-muted-foreground focus:border-primary focus:ring-2"
-          />
-        </div>
+        {total > 0 && <div className="mb-5 space-y-2">{[5,4,3,2,1].map(star => <div key={star} className="flex items-center gap-3 text-sm"><span className="w-10">{star} ⭐</span><div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary"><div className="h-full bg-amber-400" style={{width: `${total ? ((distribution[star] || 0) / total) * 100 : 0}%`}} /></div><span className="w-8 text-right text-muted-foreground">{distribution[star] || 0}</span></div>)}</div>}
 
         {error && (
           <p className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
@@ -214,7 +205,7 @@ export function FeedbackSection() {
         ) : reviews.length === 0 ? (
           <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
             <p className="text-sm text-muted-foreground">
-              Пока нет отзывов. Будьте первым, кто оставит отзыв!
+              Пока нет отзывов. Будьте первым, кто оценит Jardem AI.
             </p>
           </div>
         ) : (
@@ -227,11 +218,11 @@ export function FeedbackSection() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground">
-                      {(review.name || 'А')[0].toUpperCase()}
+                      А
                     </span>
                     <div>
                       <p className="text-sm font-semibold text-foreground">
-                        {review.name || 'Аноним'}
+                        Анонимный пользователь
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatDate(review.created_at)}

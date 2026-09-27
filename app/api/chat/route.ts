@@ -78,6 +78,23 @@ const SYSTEM_PROMPT = `Ты — специализированный AI-помо
 ### ПАМЯТЬ — помни контекст диалога: страну, маркетплейс, товар, проблему, созданную претензию.
 Не заставляй пользователя повторять информацию.`
 
+function detectProblemType(text: string): string | null {
+  const value = text.toLowerCase()
+  const rules: [string, RegExp][] = [
+    ['counterfeit', /поддел|контрафакт|fake/],
+    ['defective_product', /брак|не работает|сломал|дефект/],
+    ['wrong_item', /другой товар|не тот товар/],
+    ['refund_refused', /не вернул.*деньг|отказ.*возврат.*денег|refund/],
+    ['return_refused', /отказ.*возврат|не принима.*обратно/],
+    ['delivery_issue', /не достав|доставк|не приш[её]л/],
+    ['warranty', /гаранти/],
+    ['seller_issue', /продавец.*не отвеч|seller.*not respond/],
+    ['wrong_description', /не соответств.*описан/],
+    ['damaged', /поврежд|разбит|трещин/],
+  ]
+  return rules.find(([, pattern]) => pattern.test(value))?.[0] || null
+}
+
 function buildContext(ctx?: ChatContext): string {
   if (!ctx) return ''
   const parts: string[] = []
@@ -175,7 +192,8 @@ export async function POST(req: Request) {
       )
     }
 
-    return Response.json({ reply: text })
+    const firstUserMessage = messages.find((message) => message.role === 'user')?.content || ''
+    return Response.json({ reply: text, problemType: detectProblemType(firstUserMessage) })
   } catch (err) {
     console.error('[chat] error:', (err as Error).message)
     return Response.json(

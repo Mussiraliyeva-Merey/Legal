@@ -4,7 +4,7 @@ import { STATS_PROBLEM_TYPES, PROBLEM_LABELS, type ProblemType } from '@/lib/con
 export async function GET() {
   try {
     const { data, error } = await supabase
-      .from('problem_events')
+      .from('problem_statistics')
       .select('problem_type')
 
     if (error) {
@@ -48,19 +48,19 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { problemType, country, marketplace } = await req.json()
+    const { problemType, sessionId } = await req.json()
 
-    if (!problemType) {
+    if (!STATS_PROBLEM_TYPES.includes(problemType) || typeof sessionId !== 'string' || !/^[a-zA-Z0-9_-]{16,100}$/.test(sessionId)) {
       return Response.json({ error: 'problem_type required' }, { status: 400 })
     }
 
-    const { error } = await supabase.from('problem_events').insert({
+    const { error } = await supabase.from('problem_statistics').insert({
       problem_type: problemType,
-      country: country || null,
-      marketplace: marketplace || null,
+      session_id: sessionId,
     })
 
     if (error) {
+      if (error.code === '23505') return Response.json({ success: true, duplicate: true })
       console.error('[stats] insert error:', error.message)
       return Response.json({ error: 'Failed to record event' }, { status: 500 })
     }
