@@ -6,3 +6,6 @@ overrides:
 
 allowBuilds:
   core-js: false
+
+ignoredBuiltDependencies:
+  - core-js
