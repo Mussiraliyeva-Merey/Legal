@@ -3,3 +3,6 @@ packages:
 
 overrides:
   hono: 4.12.25
+
+allowBuilds:
+  core-js: false
