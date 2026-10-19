@@ -1,16 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { ExternalLink, Phone, Building2, ShieldCheck, Globe2 } from 'lucide-react'
+import { ExternalLink, Phone, Building2, ShieldCheck, Globe as Globe2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { KZ_OFFICIAL_SERVICES, KZ_TIMELINE, type ProblemType } from '@/lib/constants'
-
-const CATEGORY_FILTERS: { id: string; label: string; problemTypes: ProblemType[] }[] = [
-  { id: 'all', label: 'Все сервисы', problemTypes: [] },
-  { id: 'consumer', label: 'Защита прав потребителей', problemTypes: ['defective_product', 'wrong_description', 'wrong_item', 'damaged', 'incomplete', 'return_refused', 'refund_refused', 'warranty', 'seller_issue'] },
-  { id: 'counterfeit', label: 'Контрафакт', problemTypes: ['counterfeit'] },
-  { id: 'general', label: 'Общие обращения', problemTypes: ['not_delivered', 'delivery_issue', 'other'] },
-]
+import { useLang, type Lang } from '@/lib/lang'
+import { KZ_SERVICES_I18N, KZ_TIMELINE_I18N } from '@/lib/i18n-content'
 
 const CATEGORY_ICONS: Record<string, typeof Building2> = {
   general: Globe2,
@@ -19,9 +13,20 @@ const CATEGORY_ICONS: Record<string, typeof Building2> = {
 }
 
 export function KazakhstanTab() {
+  const { lang, t } = useLang()
   const [filter, setFilter] = useState('all')
 
-  const filteredServices = KZ_OFFICIAL_SERVICES.filter((s) => {
+  const services = KZ_SERVICES_I18N[lang]
+  const timeline = KZ_TIMELINE_I18N[lang]
+
+  const filterLabels: Record<string, string> = {
+    all: t('kz.filter.all'),
+    consumer: t('kz.filter.consumer'),
+    counterfeit: t('kz.filter.counterfeit'),
+    general: t('kz.filter.general'),
+  }
+
+  const filteredServices = services.filter((s) => {
     if (filter === 'all') return true
     return s.category === filter
   })
@@ -31,29 +36,28 @@ export function KazakhstanTab() {
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-3xl">🇰🇿</span>
-          <h2 className="text-xl font-bold text-foreground">Казахстан</h2>
+          <h2 className="text-xl font-bold text-foreground">{t('kz.title')}</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Официальные государственные сервисы Республики Казахстан для защиты прав потребителей.
-          Кнопки открывают официальные сайты в новой вкладке.
+          {t('kz.subtitle')}
         </p>
       </div>
 
       <div>
-        <h3 className="mb-4 text-lg font-semibold text-foreground">Официальные сервисы</h3>
+        <h3 className="mb-4 text-lg font-semibold text-foreground">{t('kz.services')}</h3>
         <div className="flex flex-wrap gap-2 mb-4">
-          {CATEGORY_FILTERS.map((f) => (
+          {['all', 'consumer', 'counterfeit', 'general'].map((f) => (
             <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
+              key={f}
+              onClick={() => setFilter(f)}
               className={cn(
                 'rounded-lg border px-3 py-2 text-xs font-medium transition',
-                filter === f.id
+                filter === f
                   ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
                   : 'border-border bg-card text-muted-foreground hover:border-primary/50',
               )}
             >
-              {f.label}
+              {filterLabels[f]}
             </button>
           ))}
         </div>
@@ -94,12 +98,12 @@ export function KazakhstanTab() {
 
       <div>
         <h3 className="mb-6 text-lg font-semibold text-foreground">
-          Что делать после получения претензии?
+          {t('kz.timeline.title')}
         </h3>
         <div className="relative">
           <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-border sm:left-6" aria-hidden="true" />
           <div className="flex flex-col gap-6">
-            {KZ_TIMELINE.map((item) => (
+            {timeline.map((item) => (
               <div key={item.step} className="relative flex gap-4 sm:gap-5">
                 <span className="z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm sm:h-12 sm:w-12">
                   {item.step}

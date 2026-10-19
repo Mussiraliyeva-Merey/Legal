@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Star, Loader2, Send, Check } from 'lucide-react'
+import { Star, Loader as Loader2, Send, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLang, LANG_LOCALE, type Lang } from '@/lib/lang'
 
 type Review = {
   id: string
@@ -12,9 +13,32 @@ type Review = {
   created_at: string
 }
 
-const STAR_LABELS = ['', 'Плохо', 'Так себе', 'Нормально', 'Хорошо', 'Отлично']
+const STAR_LABELS_I18N: Record<Lang, string[]> = {
+  ru: ['', 'Плохо', 'Так себе', 'Нормально', 'Хорошо', 'Отлично'],
+  kk: ['', 'Жаман', 'Онша емес', 'Қалыпты', 'Жақсы', 'Тамаша'],
+  en: ['', 'Poor', 'Fair', 'OK', 'Good', 'Excellent'],
+}
+
+const PLURAL_REVIEW_I18N: Record<Lang, (n: number) => string> = {
+  ru: (n) => {
+    const mod10 = n % 10
+    const mod100 = n % 100
+    if (mod10 === 1 && mod100 !== 11) return 'отзыв'
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'отзыва'
+    return 'отзывов'
+  },
+  kk: (n) => {
+    const mod10 = n % 10
+    const mod100 = n % 100
+    if (mod10 === 1 && mod100 !== 11) return 'пікір'
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'пікір'
+    return 'пікір'
+  },
+  en: (n) => n === 1 ? 'review' : 'reviews',
+}
 
 export function FeedbackSection() {
+  const { lang, t } = useLang()
   const [reviews, setReviews] = useState<Review[]>([])
   const [average, setAverage] = useState(0)
   const [total, setTotal] = useState(0)
@@ -28,6 +52,8 @@ export function FeedbackSection() {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const starLabels = STAR_LABELS_I18N[lang]
 
   useEffect(() => {
     loadReviews()
@@ -50,7 +76,7 @@ export function FeedbackSection() {
 
   async function submit() {
     if (rating < 1 || rating > 5) {
-      setError('Выберите оценку от 1 до 5 звёзд.')
+      setError(t('feedback.errorRating'))
       return
     }
 
@@ -67,7 +93,7 @@ export function FeedbackSection() {
       const json = await res.json()
 
       if (!res.ok) {
-        throw new Error(json?.error || 'Не удалось сохранить отзыв.')
+        throw new Error(json?.error || t('common.error'))
       }
 
       setSubmitted(true)
@@ -77,7 +103,7 @@ export function FeedbackSection() {
       loadReviews()
       setTimeout(() => setSubmitted(false), 4000)
     } catch (err) {
-      setError((err as Error).message || 'Произошла ошибка. Попробуйте ещё раз.')
+      setError((err as Error).message || t('common.error'))
     } finally {
       setSubmitting(false)
     }
@@ -88,9 +114,9 @@ export function FeedbackSection() {
   return (
     <div className="flex flex-col gap-6">
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="mb-1 text-xl font-bold text-foreground">Отзывы</h2>
+        <h2 className="mb-1 text-xl font-bold text-foreground">{t('feedback.title')}</h2>
         <p className="mb-6 text-sm text-muted-foreground">
-          Оцените сервис и оставьте отзыв. Ваше мнение помогает улучшить сервис.
+          {t('feedback.subtitle')}
         </p>
 
         {total > 0 && (
@@ -112,7 +138,7 @@ export function FeedbackSection() {
                 ))}
               </div>
               <span className="mt-0.5 text-xs text-muted-foreground">
-                {total} {pluralReview(total)}
+                {total} {PLURAL_REVIEW_I18N[lang](total)}
               </span>
             </div>
           </div>
@@ -120,7 +146,7 @@ export function FeedbackSection() {
 
         <div className="mb-4">
           <label className="mb-2 block text-sm font-medium text-muted-foreground">
-            Ваша оценка
+            {t('feedback.yourRating')}
           </label>
           <div className="flex items-center gap-2">
             <div className="flex gap-1">
@@ -132,7 +158,7 @@ export function FeedbackSection() {
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
                   className="rounded-md p-1 transition hover:scale-110 active:scale-95"
-                  aria-label={`${star} ${STAR_LABELS[star]}`}
+                  aria-label={`${star} ${starLabels[star]}`}
                 >
                   <Star
                     className={cn(
@@ -148,7 +174,7 @@ export function FeedbackSection() {
             </div>
             {displayRating > 0 && (
               <span className="text-sm font-medium text-foreground">
-                {STAR_LABELS[displayRating]}
+                {starLabels[displayRating]}
               </span>
             )}
           </div>
@@ -156,14 +182,14 @@ export function FeedbackSection() {
 
         <div className="mb-4">
           <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
-            Ваш отзыв
+            {t('feedback.yourReview')}
           </label>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value.slice(0, 500))}
             maxLength={500}
             rows={4}
-            placeholder="Расскажите о вашем опыте использования сервиса..."
+            placeholder={t('feedback.reviewPh')}
             className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground outline-none ring-ring/40 transition placeholder:text-muted-foreground focus:border-primary focus:ring-2"
           />
         </div>
@@ -189,13 +215,13 @@ export function FeedbackSection() {
           ) : (
             <Send className="h-5 w-5" aria-hidden="true" />
           )}
-          {submitting ? 'Отправляем...' : submitted ? 'Спасибо за отзыв!' : 'Отправить отзыв'}
+          {submitting ? t('feedback.submitting') : submitted ? t('feedback.thanks') : t('feedback.submit')}
         </button>
       </div>
 
       <div>
         <h3 className="mb-4 text-lg font-semibold text-foreground">
-          Отзывы пользователей
+          {t('feedback.userReviews')}
         </h3>
 
         {loading ? (
@@ -205,7 +231,7 @@ export function FeedbackSection() {
         ) : reviews.length === 0 ? (
           <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
             <p className="text-sm text-muted-foreground">
-              Пока нет отзывов. Будьте первым, кто оценит Jardem AI.
+              {t('feedback.empty')}
             </p>
           </div>
         ) : (
@@ -222,10 +248,10 @@ export function FeedbackSection() {
                     </span>
                     <div>
                       <p className="text-sm font-semibold text-foreground">
-                        Анонимный пользователь
+                        {t('feedback.anonymous')}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatDate(review.created_at)}
+                        {formatDate(review.created_at, lang)}
                       </p>
                     </div>
                   </div>
@@ -258,17 +284,9 @@ export function FeedbackSection() {
   )
 }
 
-function pluralReview(n: number): string {
-  const mod10 = n % 10
-  const mod100 = n % 100
-  if (mod10 === 1 && mod100 !== 11) return 'отзыв'
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'отзыва'
-  return 'отзывов'
-}
-
-function formatDate(iso: string): string {
+function formatDate(iso: string, lang: Lang): string {
   try {
-    return new Date(iso).toLocaleDateString('ru-RU', {
+    return new Date(iso).toLocaleDateString(LANG_LOCALE[lang], {
       day: 'numeric',
       month: 'long',
       year: 'numeric',

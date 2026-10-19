@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BarChart3, Loader2 } from 'lucide-react'
+import { ChartBar as BarChart3, Loader as Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLang } from '@/lib/lang'
+import { getProblemLabel } from '@/lib/i18n-content'
 
 type StatItem = {
   type: string
@@ -22,6 +24,7 @@ const BAR_COLORS: Record<string, string> = {
 }
 
 export function StatisticsTab() {
+  const { lang, t } = useLang()
   const [stats, setStats] = useState<StatItem[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -31,7 +34,11 @@ export function StatisticsTab() {
       try {
         const res = await fetch('/api/stats')
         const json = await res.json()
-        setStats(json.stats || [])
+        const rawStats: { type: string; count: number; percentage: number }[] = json.stats || []
+        setStats(rawStats.map(s => ({
+          ...s,
+          label: getProblemLabel(s.type as any, lang),
+        })))
         setTotal(json.total || 0)
       } catch (err) {
         console.error('[stats] load error:', err)
@@ -40,7 +47,7 @@ export function StatisticsTab() {
       }
     }
     load()
-  }, [])
+  }, [lang])
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,11 +56,10 @@ export function StatisticsTab() {
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <BarChart3 className="h-5 w-5" aria-hidden="true" />
           </span>
-          <h2 className="text-xl font-bold text-foreground">Статистика проблем</h2>
+          <h2 className="text-xl font-bold text-foreground">{t('stats.title')}</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Реальная обезличенная статистика по типам проблем. Без личных данных — только категория
-          проблемы и количество обращений.
+          {t('stats.subtitle')}
         </p>
       </div>
 
@@ -64,14 +70,14 @@ export function StatisticsTab() {
       ) : total === 0 ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
           <p className="text-sm text-muted-foreground">
-            Пока нет данных. Статистика появится, когда пользователи начнут создавать претензии.
+            {t('stats.empty')}
           </p>
         </div>
       ) : (
         <>
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-foreground">Всего обращений</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t('stats.total')}</h3>
               <span className="text-2xl font-bold text-primary">{total}</span>
             </div>
 
@@ -119,8 +125,7 @@ export function StatisticsTab() {
 
       <div className="rounded-xl border border-border bg-secondary/30 p-4">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Статистика ведётся в обезличенном виде. Мы не сохраняем ФИО, телефон, email, адрес, номер
-          заказа или текст претензии. Записывается только техническая категория проблемы.
+          {t('stats.privacy')}
         </p>
       </div>
     </div>

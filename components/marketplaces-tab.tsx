@@ -3,37 +3,44 @@
 import { useState } from 'react'
 import { Search, Store, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLang } from '@/lib/lang'
 import { MARKETPLACES } from '@/lib/constants'
+import { MARKETPLACE_COUNTRIES_I18N, MARKETPLACE_OTHER_I18N } from '@/lib/i18n-content'
 
-const MARKETPLACE_INFO: Record<string, { country: string; url: string }> = {
-  'Kaspi.kz': { country: '🇰🇿 Казахстан', url: 'https://kaspi.kz' },
-  'Halyk Market': { country: '🇰🇿 Казахстан', url: 'https://market.halykbank.kz' },
-  ForteMarket: { country: '🇰🇿 Казахстан', url: 'https://forte.market' },
-  Wildberries: { country: '🇷🇺 Россия', url: 'https://wildberries.ru' },
-  Ozon: { country: '🇷🇺 Россия', url: 'https://ozon.ru' },
-  'Yandex Market': { country: '🇷🇺 Россия', url: 'https://market.yandex.ru' },
-  AliExpress: { country: '🇨🇳 Китай', url: 'https://aliexpress.com' },
-  ZoodMall: { country: '🇰🇿 Казахстан', url: 'https://zoodmall.com' },
-  'Uzum Market': { country: '🇺🇿 Узбекистан', url: 'https://uzum.uz' },
-  Мегамаркет: { country: '🇷🇺 Россия', url: 'https://megamarket.ru' },
-  'Магнит Маркет': { country: '🇷🇺 Россия', url: 'https://magnit.ru' },
-  Avito: { country: '🇷🇺 Россия', url: 'https://avito.ru' },
-  Pinduoduo: { country: '🇨🇳 Китай', url: 'https://pinduoduo.com' },
-  Temu: { country: '🇨🇳 Китай', url: 'https://temu.com' },
-  Taobao: { country: '🇨🇳 Китай', url: 'https://taobao.com' },
-  '1688': { country: '🇨🇳 Китай', url: 'https://1688.com' },
-  SHEIN: { country: '🇨🇳 Китай', url: 'https://shein.com' },
-  Amazon: { country: '🇺🇸 США', url: 'https://amazon.com' },
-  eBay: { country: '🇺🇸 США', url: 'https://ebay.com' },
-  Alibaba: { country: '🇨🇳 Китай', url: 'https://alibaba.com' },
-  'JD.com': { country: '🇨🇳 Китай', url: 'https://jd.com' },
-  DHgate: { country: '🇨🇳 Китай', url: 'https://dhgate.com' },
+const MARKETPLACE_INFO: Record<string, string> = {
+  'Kaspi.kz': 'https://kaspi.kz',
+  'Halyk Market': 'https://market.halykbank.kz',
+  ForteMarket: 'https://forte.market',
+  Wildberries: 'https://wildberries.ru',
+  Ozon: 'https://ozon.ru',
+  'Yandex Market': 'https://market.yandex.ru',
+  AliExpress: 'https://aliexpress.com',
+  ZoodMall: 'https://zoodmall.com',
+  'Uzum Market': 'https://uzum.uz',
+  Мегамаркет: 'https://megamarket.ru',
+  'Магнит Маркет': 'https://magnit.ru',
+  Avito: 'https://avito.ru',
+  Pinduoduo: 'https://pinduoduo.com',
+  Temu: 'https://temu.com',
+  Taobao: 'https://taobao.com',
+  '1688': 'https://1688.com',
+  SHEIN: 'https://shein.com',
+  Amazon: 'https://amazon.com',
+  eBay: 'https://ebay.com',
+  Alibaba: 'https://alibaba.com',
+  'JD.com': 'https://jd.com',
+  DHgate: 'https://dhgate.com',
 }
 
 export function MarketplacesTab() {
+  const { lang, t } = useLang()
   const [query, setQuery] = useState('')
 
-  const filtered = MARKETPLACES.filter((m) =>
+  const otherLabel = MARKETPLACE_OTHER_I18N[lang]
+  const countries = MARKETPLACE_COUNTRIES_I18N[lang]
+  const allMarketplaces = [...MARKETPLACES.filter(m => m !== 'Другой маркетплейс'), otherLabel]
+
+  const filtered = allMarketplaces.filter((m) =>
     m.toLowerCase().includes(query.toLowerCase()),
   )
 
@@ -44,11 +51,10 @@ export function MarketplacesTab() {
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <Store className="h-5 w-5" aria-hidden="true" />
           </span>
-          <h2 className="text-xl font-bold text-foreground">Маркетплейсы</h2>
+          <h2 className="text-xl font-bold text-foreground">{t('marketplaces.title')}</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Большой список маркетплейсов. При создании претензии выберите нужный из списка или укажите
-          свой.
+          {t('marketplaces.subtitle')}
         </p>
       </div>
 
@@ -58,14 +64,15 @@ export function MarketplacesTab() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Поиск маркетплейса..."
+          placeholder={t('marketplaces.search')}
           className="w-full rounded-lg border border-input bg-background pl-10 pr-3 py-2.5 text-sm text-foreground outline-none ring-ring/40 transition placeholder:text-muted-foreground focus:border-primary focus:ring-2"
         />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((name) => {
-          const info = MARKETPLACE_INFO[name]
+          const url = MARKETPLACE_INFO[name]
+          const countryLabel = countries[name]
           return (
             <div
               key={name}
@@ -76,17 +83,17 @@ export function MarketplacesTab() {
               </span>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-foreground truncate">{name}</h3>
-                {info && (
-                  <p className="text-xs text-muted-foreground">{info.country}</p>
+                {countryLabel && (
+                  <p className="text-xs text-muted-foreground">{countryLabel}</p>
                 )}
               </div>
-              {info && (
+              {url && (
                 <a
-                  href={info.url}
+                  href={url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-secondary hover:text-primary"
-                  aria-label={`Открыть ${name}`}
+                  aria-label={`${t('marketplaces.open')} ${name}`}
                 >
                   <ExternalLink className="h-4 w-4" aria-hidden="true" />
                 </a>
@@ -98,7 +105,7 @@ export function MarketplacesTab() {
 
       {filtered.length === 0 && (
         <p className="text-center text-sm text-muted-foreground py-8">
-          Ничего не найдено
+          {t('marketplaces.notFound')}
         </p>
       )}
     </div>

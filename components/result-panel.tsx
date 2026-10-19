@@ -1,15 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Copy, FileDown, FileType, Loader2, ExternalLink, Send } from 'lucide-react'
+import { Check, Copy, FileDown, FileType, Loader as Loader2, ExternalLink, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const SUBMIT_LINKS = [
-  { label: 'eGov.kz', url: 'https://www.egov.kz/', desc: 'Портал госуслуг Казахстана' },
-  { label: 'eOtinish', url: 'https://eotinish.kz/', desc: 'Обращения в госорганы РК' },
-  { label: '1506', url: 'tel:1506', desc: 'Защита прав потребителей РК' },
-  { label: 'Роспотребнадзор', url: 'https://www.rospotrebnadzor.ru/', desc: 'Защита прав потребителей РФ' },
-]
+import { useLang } from '@/lib/lang'
 
 type Props = {
   result: string
@@ -17,8 +11,16 @@ type Props = {
 }
 
 export function ResultPanel({ result, isLoading }: Props) {
+  const { t } = useLang()
   const [copied, setCopied] = useState(false)
   const [downloading, setDownloading] = useState<'pdf' | 'docx' | null>(null)
+
+  const SUBMIT_LINKS = [
+    { label: 'eGov.kz', url: 'https://www.egov.kz/', desc: t('result.link.egov') },
+    { label: 'eOtinish', url: 'https://eotinish.kz/', desc: t('result.link.eotinish') },
+    { label: '1506', url: 'tel:1506', desc: t('result.link.1506') },
+    { label: t('result.link.rospotreb'), url: 'https://www.rospotrebnadzor.ru/', desc: t('result.link.rospotreb') },
+  ]
 
   async function handleCopy() {
     await navigator.clipboard.writeText(result)
@@ -30,11 +32,7 @@ export function ResultPanel({ result, isLoading }: Props) {
     setDownloading('pdf')
     try {
       const { jsPDF } = await import('jspdf')
-      const doc = new jsPDF({
-        unit: 'mm',
-        format: 'a4',
-      })
-
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' })
       const pageWidth = doc.internal.pageSize.getWidth()
       const pageHeight = doc.internal.pageSize.getHeight()
       const margin = 20
@@ -48,28 +46,16 @@ export function ResultPanel({ result, isLoading }: Props) {
       let y = margin
 
       for (const line of lines) {
-        if (y > pageHeight - margin) {
-          doc.addPage()
-          y = margin
-        }
-
-        if (line.trim() === '') {
-          y += lineHeight / 2
-          continue
-        }
-
+        if (y > pageHeight - margin) { doc.addPage(); y = margin }
+        if (line.trim() === '') { y += lineHeight / 2; continue }
         const splitLines = doc.splitTextToSize(line, maxWidth)
         for (const sl of splitLines) {
-          if (y > pageHeight - margin) {
-            doc.addPage()
-            y = margin
-          }
+          if (y > pageHeight - margin) { doc.addPage(); y = margin }
           doc.text(sl, margin, y)
           y += lineHeight
         }
       }
-
-      doc.save(`pretenziya-${new Date().toISOString().slice(0, 10)}.pdf`)
+      doc.save(`claim-${new Date().toISOString().slice(0, 10)}.pdf`)
     } catch (err) {
       console.error('PDF error:', err)
     } finally {
@@ -80,18 +66,11 @@ export function ResultPanel({ result, isLoading }: Props) {
   async function handleDownloadDOCX() {
     setDownloading('docx')
     try {
-      const escaped = result
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-
-      const paragraphs = escaped
-        .split('\n')
-        .map((line) => {
-          if (line.trim() === '') return '<w:p/>'
-          return `<w:p><w:r><w:t xml:space="preserve">${line}</w:t></w:r></w:p>`
-        })
-        .join('')
+      const escaped = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      const paragraphs = escaped.split('\n').map((line) => {
+        if (line.trim() === '') return '<w:p/>'
+        return `<w:p><w:r><w:t xml:space="preserve">${line}</w:t></w:r></w:p>`
+      }).join('')
 
       const docxXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <?mso-application progid="Word.Document"?>
@@ -107,7 +86,7 @@ ${paragraphs}
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `pretenziya-${new Date().toISOString().slice(0, 10)}.docx`
+      link.download = `claim-${new Date().toISOString().slice(0, 10)}.docx`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -123,82 +102,47 @@ ${paragraphs}
     <div className="flex flex-col gap-4">
       <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="border-b border-border bg-secondary/50 px-6 py-4">
-          <h3 className="text-base font-semibold text-foreground">Готовая претензия</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Документ полностью готов к отправке. Проверьте данные и скачайте.
-          </p>
+          <h3 className="text-base font-semibold text-foreground">{t('result.title')}</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t('result.subtitle')}</p>
         </div>
-
         <div className="p-6">
           <article className="whitespace-pre-wrap font-serif text-[15px] leading-relaxed text-card-foreground">
             {result}
-            {isLoading && (
-              <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-primary align-middle" />
-            )}
+            {isLoading && <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-primary align-middle" />}
           </article>
         </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={handleDownloadPDF}
-          disabled={downloading !== null}
-          className={cn(
-            'flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:translate-y-px disabled:opacity-50',
-          )}
-        >
-          {downloading === 'pdf' ? (
-            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-          ) : (
-            <FileDown className="h-5 w-5" aria-hidden="true" />
-          )}
-          Скачать PDF
+        <button type="button" onClick={handleDownloadPDF} disabled={downloading !== null}
+          className={cn('flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:translate-y-px disabled:opacity-50')}>
+          {downloading === 'pdf' ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileDown className="h-5 w-5" aria-hidden="true" />}
+          {t('result.downloadPdf')}
         </button>
-        <button
-          type="button"
-          onClick={handleDownloadDOCX}
-          disabled={downloading !== null}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3.5 text-sm font-semibold text-foreground shadow-sm transition hover:bg-secondary active:translate-y-px disabled:opacity-50"
-        >
-          {downloading === 'docx' ? (
-            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-          ) : (
-            <FileType className="h-5 w-5" aria-hidden="true" />
-          )}
-          Скачать DOCX
+        <button type="button" onClick={handleDownloadDOCX} disabled={downloading !== null}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3.5 text-sm font-semibold text-foreground shadow-sm transition hover:bg-secondary active:translate-y-px disabled:opacity-50">
+          {downloading === 'docx' ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <FileType className="h-5 w-5" aria-hidden="true" />}
+          {t('result.downloadDocx')}
         </button>
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3.5 text-sm font-semibold text-foreground shadow-sm transition hover:bg-secondary active:translate-y-px"
-        >
-          {copied ? (
-            <Check className="h-5 w-5 text-green-600" aria-hidden="true" />
-          ) : (
-            <Copy className="h-5 w-5" aria-hidden="true" />
-          )}
-          {copied ? 'Скопировано' : 'Скопировать'}
+        <button type="button" onClick={handleCopy}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3.5 text-sm font-semibold text-foreground shadow-sm transition hover:bg-secondary active:translate-y-px">
+          {copied ? <Check className="h-5 w-5 text-green-600" aria-hidden="true" /> : <Copy className="h-5 w-5" aria-hidden="true" />}
+          {copied ? t('result.copied') : t('result.copy')}
         </button>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
         <div className="mb-3 flex items-center gap-2">
           <Send className="h-4 w-4 text-primary" aria-hidden="true" />
-          <h4 className="text-sm font-semibold text-foreground">Отправить претензию</h4>
+          <h4 className="text-sm font-semibold text-foreground">{t('result.submitTitle')}</h4>
         </div>
-        <p className="mb-4 text-xs text-muted-foreground">
-          Скопируйте текст претензии и вставьте его на официальном сервисе вашей страны.
-        </p>
+        <p className="mb-4 text-xs text-muted-foreground">{t('result.submitDesc')}</p>
         <div className="grid gap-2.5 sm:grid-cols-2">
           {SUBMIT_LINKS.map((link) => (
-            <a
-              key={link.label}
-              href={link.url}
+            <a key={link.label} href={link.url}
               target={link.url.startsWith('tel:') ? undefined : '_blank'}
               rel={link.url.startsWith('tel:') ? undefined : 'noopener noreferrer'}
-              className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-4 py-3 transition hover:border-primary/50 hover:bg-secondary"
-            >
+              className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-4 py-3 transition hover:border-primary/50 hover:bg-secondary">
               <div>
                 <span className="text-sm font-medium text-foreground">{link.label}</span>
                 <p className="text-xs text-muted-foreground">{link.desc}</p>

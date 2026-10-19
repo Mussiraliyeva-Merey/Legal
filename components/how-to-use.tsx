@@ -1,31 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronRight, ClipboardList, FileSignature, Bot, FileDown, Check } from 'lucide-react'
+import { ChevronRight, ClipboardList, Signature as FileSignature, Bot, FileDown, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLang } from '@/lib/lang'
+import { HOW_TO_STEPS_I18N } from '@/lib/i18n-content'
 
-const STEPS = [
-  { icon: ClipboardList, title: 'Опишите проблему', text: 'Расскажите, что произошло с вашим заказом — своими словами.' },
-  { icon: FileSignature, title: 'Укажите данные', text: 'Введите информацию о себе, заказе и маркетплейсе.' },
-  { icon: Bot, title: 'Получите анализ', text: 'AI проанализирует ситуацию и объяснит возможные действия.' },
-  { icon: FileSignature, title: 'Получите претензию', text: 'Система автоматически подготовит готовую претензию со ссылками на закон.' },
-  { icon: FileDown, title: 'Скачайте и отправьте', text: 'Скачайте PDF/DOCX или используйте готовый текст для отправки продавцу, маркетплейсу или официальному сервису.' },
-]
+const STEP_ICONS = [ClipboardList, FileSignature, Bot, FileSignature, FileDown]
 
 export function HowToUse({ onStart }: { onStart: () => void }) {
+  const { t } = useLang()
   const [step, setStep] = useState(0)
-  const isLast = step === STEPS.length - 1
+  const steps = HOW_TO_STEPS_I18N[useLang().lang]
+  const isLast = step === steps.length - 1
 
   return (
     <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-      <h3 className="mb-2 text-base font-semibold text-foreground">Как пользоваться сайтом?</h3>
+      <h3 className="mb-2 text-base font-semibold text-foreground">{t('howto.title')}</h3>
       <p className="mb-6 text-sm text-muted-foreground">
-        Пошаговая инструкция — 5 простых шагов от описания проблемы до готовой претензии.
+        {t('howto.subtitle')}
       </p>
 
       <div className="flex flex-col gap-3">
-        {STEPS.map((s, i) => {
-          const Icon = s.icon
+        {steps.map((s, i) => {
+          const Icon = STEP_ICONS[i] || ClipboardList
           const done = i < step
           const active = i === step
           return (
@@ -59,7 +57,7 @@ export function HowToUse({ onStart }: { onStart: () => void }) {
             onClick={() => setStep(step - 1)}
             className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-secondary"
           >
-            Назад
+            {t('howto.back')}
           </button>
         )}
         {!isLast ? (
@@ -67,7 +65,7 @@ export function HowToUse({ onStart }: { onStart: () => void }) {
             onClick={() => setStep(step + 1)}
             className="ml-auto flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
-            Далее
+            {t('howto.next')}
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
         ) : (
@@ -75,7 +73,7 @@ export function HowToUse({ onStart }: { onStart: () => void }) {
             onClick={onStart}
             className="ml-auto flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
-            Начать
+            {t('howto.start')}
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
         )}
