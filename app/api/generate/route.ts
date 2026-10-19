@@ -1,4 +1,6 @@
-import { PROBLEM_LABELS, type ProblemType } from '@/lib/constants'
+import { type ProblemType } from '@/lib/constants'
+import { PROBLEM_LABELS_I18N } from '@/lib/i18n-content'
+import type { Lang } from '@/lib/lang'
 
 export const maxDuration = 60
 
@@ -16,9 +18,14 @@ type GenerateRequest = {
   productPrice?: string
   problemType?: ProblemType
   description?: string
+  lang?: Lang
 }
 
-const LANG_INSTRUCTION = 'ВАЖНО: отвечай ТОЛЬКО на русском языке.'
+const LANGUAGE_NAMES: Record<Lang, string> = { ru: 'русском', kk: 'казахском', en: 'английском' }
+
+function getLanguageInstruction(lang: Lang = 'ru') {
+  return `ВАЖНО: отвечай ТОЛЬКО на ${LANGUAGE_NAMES[lang]} языке. Сохраняй юридическую точность и официально-деловой стиль.`
+}
 
 const SYSTEM_PROMPT = `Ты — специализированный юридический ассистент по защите прав потребителей на маркетплейсах.
 Твоя задача — сформировать ПОЛНОСТЬЮ ГОТОВУЮ официальную претензию на основе фактов, введённых пользователем.
@@ -95,8 +102,9 @@ const SYSTEM_PROMPT = `Ты — специализированный юриди�
 - Подпись должна содержать линию для подписи и ФИО пользователя.`
 
 function buildPrompt(data: GenerateRequest): string {
-  const problemLabel = data.problemType ? PROBLEM_LABELS[data.problemType] : 'не указана'
-  const today = new Date().toLocaleDateString('ru-RU')
+  const lang = data.lang || 'ru'
+  const problemLabel = data.problemType ? PROBLEM_LABELS_I18N[data.problemType][lang] : 'не указана'
+  const today = new Intl.DateTimeFormat(lang === 'kk' ? 'kk-KZ' : lang === 'en' ? 'en-US' : 'ru-RU').format(new Date())
 
   return `СТРАНА: ${data.country || 'не указана'}
 МАРКЕТПЛЕЙС: ${data.marketplace || 'не указан'}
@@ -120,7 +128,7 @@ function buildPrompt(data: GenerateRequest): string {
 
 Текущая дата для документа: ${today}
 
-ЗАДАЧА: Сформируй полностью готовую официальную претензию по структуре, описанной в системном промпте. Вставь все данные пользователя и заказа в соответствующие поля. Определи применимое законодательство, статьи закона, требования и сроки. Если маркетплейс находится за пределами страны пользователя — укажи статус трансграничного спора.`
+ЗАДАЧА: Сформируй ��олностью готовую официальную претензию по структуре, описанной в системном промпте. Вставь все данные пользователя и заказа в соответствующие поля. Определи применимое законодательство, статьи закона, требования и сроки. Если маркетплейс находится за пределами страны пользователя — укажи статус трансграничного спора.`
 }
 
 export async function POST(req: Request) {
@@ -135,7 +143,8 @@ export async function POST(req: Request) {
     }
 
     const body: GenerateRequest = await req.json()
-    const prompt = buildPrompt(body)
+    const lang: Lang = body.lang === 'en' || body.lang === 'kk' ? body.lang : 'ru'
+    const prompt = buildPrompt({ ...body, lang })
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 55000)
@@ -151,7 +160,7 @@ export async function POST(req: Request) {
             contents: [
               {
                 parts: [
-                  { text: `${SYSTEM_PROMPT}\n\n${LANG_INSTRUCTION}\n\n${prompt}` },
+                  { text: `${SYSTEM_PROMPT}\n\n${getLanguageInstruction(lang)}\n\n${prompt}` },
                 ],
               },
             ],
@@ -209,7 +218,7 @@ export async function POST(req: Request) {
       )
     }
 
-    if (!/Дата\s*:/i.test(text) || !/Подпись\s*:/i.test(text)) {
+    if (!/(Дата|Date|Күні)\s*:/i.test(text) || !/(Подпись|Signature|Қолтаңба)\s*:/i.test(text)) {
       console.error('[generate] missing final section')
       return Response.json({ error: 'Претензия сформировалась не полностью. Попробуйте ещё раз.' }, { status: 502 })
     }
