@@ -478,8 +478,8 @@ export function ClaimForm() {
             marketplace: effectiveMarketplace,
             orderNumber: data.orderNumber,
             productName: data.productName,
-            problemType: data.problemType
-              ? PROBLEM_CARDS.find((c) => c.id === data.problemType)?.label || ''
+problemType: data.problemType
+              ? PROBLEM_LABELS_I18N[data.problemType][lang]
               : '',
             claim: result,
           }}

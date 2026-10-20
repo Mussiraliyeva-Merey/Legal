@@ -112,7 +112,8 @@ function buildPrompt(data: GenerateRequest): string {
       ? { country: 'ЕЛ', marketplace: 'МАРКЕТПЛЕЙС', user: 'ПАЙДАЛАНУШЫ ДЕРЕКТЕРІ', order: 'ТАПСЫРЫС ДЕРЕКТЕРІ', problem: 'МӘСЕЛЕ', category: 'Санат', description: 'Пайдаланушы сипаттамасы' }
       : { country: 'СТРАНА', marketplace: 'МАРКЕТПЛЕЙС', user: 'ДАННЫЕ ПОЛЬЗОВАТЕЛЯ', order: 'ДАННЫЕ ЗАКАЗА', problem: 'ПРОБЛЕМА', category: 'Категория', description: 'Описание пользователя' }
 
-  return `${labels.country}: ${data.country || 'not specified'}
+  return `OUTPUT LANGUAGE: ${language === 'ru' ? 'Russian (русский)' : language === 'kk' ? 'Kazakh (қазақ тілі)' : 'English'}
+${labels.country}: ${data.country || 'not specified'}
 ${labels.marketplace}: ${data.marketplace || 'not specified'}
 
 ${labels.user}:
@@ -208,9 +209,10 @@ export async function POST(req: Request) {
 
     const geminiData = await geminiResponse.json()
     const text =
-      geminiData?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || '').join('') ??
-      
-      ''
+      (geminiData?.candidates?.[0]?.content?.parts ?? [])
+        .filter((p: { text?: string; thought?: boolean }) => !p.thought && typeof p.text === 'string')
+        .map((p: { text: string }) => p.text)
+        .join('')
 
     if (geminiData?.candidates?.[0]?.finishReason && geminiData.candidates[0].finishReason !== 'STOP') {
       console.error('[generate] incomplete response:', geminiData.candidates[0].finishReason)
