@@ -168,6 +168,11 @@ export async function POST(req: Request) {
     clearTimeout(timeout)
 
     if (!geminiResponse.ok) {
+      const providerError = await geminiResponse.json().catch(() => null)
+      const providerStatus = providerError?.error?.status || 'UNKNOWN'
+      console.error('[chat] Gemini error:', geminiResponse.status, providerStatus, providerError?.error?.message)
+      return Response.json({ error: 'AI-провайдер отклонил запрос.', providerHttpStatus: geminiResponse.status, providerStatus, providerMessage: providerError?.error?.message }, { status: 502 })
+
       if (geminiResponse.status === 429) {
         return Response.json(
           { error: 'Сервис перегружен. Попробуйте через минуту.' },
