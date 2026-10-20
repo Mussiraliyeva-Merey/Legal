@@ -26,7 +26,7 @@ const LANG_INSTRUCTIONS: Record<string, string> = {
   en: 'IMPORTANT: respond ONLY in English.',
 }
 
-const SYSTEM_PROMPT = `Ты — специализированный AI-помощник по защите прав потребителей на маркетплейсах.
+const SYSTEM_PROMPT = `You are a specialized AI assistant for consumer protection in marketplace purchases.
 Твоя задача — помогать людям решать проблемы с покупками, возвратами, продавцами и маркетплейсами.
 
 ### ТЕМА — отвечай ТОЛЬКО на вопросы, связанные с:
@@ -140,7 +140,7 @@ export async function POST(req: Request) {
     let geminiResponse: Response
     try {
       geminiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
