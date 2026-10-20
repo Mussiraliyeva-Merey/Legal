@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Loader2, Bot, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLang } from '@/lib/lang'
 
 type ChatMessage = {
   role: 'user' | 'assistant'
@@ -23,6 +24,7 @@ type Props = {
 }
 
 export function AiChat({ context }: Props) {
+  const { lang, t } = useLang()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -52,18 +54,19 @@ export function AiChat({ context }: Props) {
         body: JSON.stringify({
           messages: newMessages,
           context,
+          lang,
         }),
       })
 
       const json = await response.json()
 
       if (!response.ok) {
-        throw new Error(json?.error || 'Не удалось получить ответ.')
+        throw new Error(json?.error || t('common.error'))
       }
 
       setMessages([...newMessages, { role: 'assistant', content: json.reply }])
     } catch (err) {
-      setError((err as Error).message || 'Произошла ошибка. Попробуйте ещё раз.')
+      setError((err as Error).message || t('common.error'))
     } finally {
       setIsLoading(false)
     }
@@ -77,10 +80,10 @@ export function AiChat({ context }: Props) {
   }
 
   const suggestions = [
-    'Что делать, если продавец не отвечает?',
-    'Куда мне обратиться?',
-    'Почему выбран именно этот закон?',
-    'Что делать, если срок уже прошёл?',
+    t('chat.suggestion1'),
+    t('chat.suggestion2'),
+    t('chat.suggestion3'),
+    t('chat.suggestion4'),
   ]
 
   return (
@@ -88,10 +91,10 @@ export function AiChat({ context }: Props) {
       <div className="border-b border-border bg-secondary/50 px-5 py-3.5">
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-primary" aria-hidden="true" />
-          <h3 className="text-sm font-semibold text-foreground">Вопрос AI</h3>
+          <h3 className="text-sm font-semibold text-foreground">{t('chat.title')}</h3>
         </div>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          AI помнит контекст вашей ситуации и может обновить претензию
+          {t('chat.subtitle')}
         </p>
       </div>
 
@@ -103,7 +106,7 @@ export function AiChat({ context }: Props) {
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <Bot className="h-10 w-10 text-muted-foreground/40" aria-hidden="true" />
             <p className="text-sm text-muted-foreground max-w-xs">
-              Задайте вопрос по вашей ситуации. AI помнит все данные о заказе и проблеме.
+              {t('chat.empty')}
             </p>
             <div className="flex flex-col gap-2 w-full max-w-sm">
               {suggestions.map((s) => (
@@ -179,7 +182,7 @@ export function AiChat({ context }: Props) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={1}
-            placeholder="Ваш вопрос..."
+            placeholder={t('chat.placeholder')}
             className="flex-1 resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground outline-none ring-ring/40 transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 max-h-32"
           />
           <button
@@ -187,7 +190,7 @@ export function AiChat({ context }: Props) {
             onClick={send}
             disabled={isLoading || !input.trim()}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
-            aria-label="Отправить"
+            aria-label={t('ai.send')}
           >
             <Send className="h-4 w-4" aria-hidden="true" />
           </button>

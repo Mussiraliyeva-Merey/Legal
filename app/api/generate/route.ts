@@ -16,9 +16,14 @@ type GenerateRequest = {
   productPrice?: string
   problemType?: ProblemType
   description?: string
+  lang?: 'ru' | 'kk' | 'en'
 }
 
-const LANG_INSTRUCTION = 'ВАЖНО: отвечай ТОЛЬКО на русском языке.'
+const LANG_INSTRUCTIONS: Record<NonNullable<GenerateRequest['lang']>, string> = {
+  ru: 'ВАЖНО: сформируй весь документ и все пояснения только на русском языке.',
+  kk: 'МАҢЫЗДЫ: құжат пен барлық түсіндірмелерді тек қазақ тілінде қалыптастыр.',
+  en: 'IMPORTANT: generate the entire document and all explanations only in English.',
+}
 
 const SYSTEM_PROMPT = `Ты — специализированный юридический ассистент по защите прав потребителей на маркетплейсах.
 Твоя задача — сформировать ПОЛНОСТЬЮ ГОТОВУЮ официальную претензию на основе фактов, введённых пользователем.
@@ -96,7 +101,8 @@ const SYSTEM_PROMPT = `Ты — специализированный юриди�
 
 function buildPrompt(data: GenerateRequest): string {
   const problemLabel = data.problemType ? PROBLEM_LABELS[data.problemType] : 'не указана'
-  const today = new Date().toLocaleDateString('ru-RU')
+  const locale = data.lang === 'kk' ? 'kk-KZ' : data.lang === 'en' ? 'en-US' : 'ru-RU'
+  const today = new Date().toLocaleDateString(locale)
 
   return `СТРАНА: ${data.country || 'не указана'}
 МАРКЕТПЛЕЙС: ${data.marketplace || 'не указан'}
@@ -120,7 +126,7 @@ function buildPrompt(data: GenerateRequest): string {
 
 Текущая дата для документа: ${today}
 
-ЗАДАЧА: Сформируй полностью готовую официальную претензию по структуре, описанной в системном промпте. Вставь все данные пользователя и заказа в соответствующие поля. Определи применимое законодательство, статьи закона, требования и сроки. Если маркетплейс находится за пределами страны пользователя — укажи статус трансграничного спора.`
+ЗАДАЧА: Сформируй ��олностью готовую официальную претензию по структуре, описанной в системном промпте. Вставь все данные пользователя и заказа в соответствующие поля. Определи применимое законодательство, статьи закона, требования и сроки. Если маркетплейс находится за пределами страны пользователя — укажи статус трансграничного спора.`
 }
 
 export async function POST(req: Request) {
@@ -136,6 +142,7 @@ export async function POST(req: Request) {
 
     const body: GenerateRequest = await req.json()
     const prompt = buildPrompt(body)
+    const langInstruction = LANG_INSTRUCTIONS[body.lang || 'ru']
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 55000)
@@ -151,7 +158,7 @@ export async function POST(req: Request) {
             contents: [
               {
                 parts: [
-                  { text: `${SYSTEM_PROMPT}\n\n${LANG_INSTRUCTION}\n\n${prompt}` },
+                  { text: `${SYSTEM_PROMPT}\n\n${langInstruction}\n\n${prompt}` },
                 ],
               },
             ],

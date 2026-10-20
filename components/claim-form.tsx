@@ -33,6 +33,8 @@ import {
 import { ResultPanel } from '@/components/result-panel'
 import { AiChat } from '@/components/ai-chat'
 import { ReviewPrompt } from '@/components/review-prompt'
+import { useLang } from '@/lib/lang'
+import { MARKETPLACE_OTHER_I18N } from '@/lib/i18n-content'
 
 const PROBLEM_ICONS: Record<string, LucideIcon> = {
   shield: ShieldAlert,
@@ -85,6 +87,7 @@ const EMPTY: ClaimData = {
 }
 
 export function ClaimForm() {
+  const { lang, t } = useLang()
   const [data, setData] = useState<ClaimData>(EMPTY)
   const [result, setResult] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -103,7 +106,7 @@ export function ClaimForm() {
   }
 
   const effectiveMarketplace =
-    data.marketplace === 'Другой маркетплейс' && data.customMarketplace
+    data.marketplace === MARKETPLACE_OTHER_I18N[lang] && data.customMarketplace
       ? data.customMarketplace
       : data.marketplace
 
@@ -147,6 +150,7 @@ export function ClaimForm() {
           productPrice: data.productPrice,
           problemType: data.problemType,
           description: data.description,
+          lang,
         }),
         signal: controller.signal,
       })
