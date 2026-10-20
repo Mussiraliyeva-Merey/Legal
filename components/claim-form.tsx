@@ -25,7 +25,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
-  COUNTRIES,
   MARKETPLACES,
   PROBLEM_CARDS,
   type ProblemType,
@@ -34,7 +33,11 @@ import { ResultPanel } from '@/components/result-panel'
 import { AiChat } from '@/components/ai-chat'
 import { ReviewPrompt } from '@/components/review-prompt'
 import { useLang } from '@/lib/lang'
-import { MARKETPLACE_OTHER_I18N } from '@/lib/i18n-content'
+import {
+  COUNTRIES_I18N,
+  MARKETPLACE_OTHER_I18N,
+  PROBLEM_LABELS_I18N,
+} from '@/lib/i18n-content'
 
 const PROBLEM_ICONS: Record<string, LucideIcon> = {
   shield: ShieldAlert,
@@ -105,10 +108,13 @@ export function ClaimForm() {
     setData((prev) => ({ ...prev, [key]: value }))
   }
 
-  const effectiveMarketplace =
-    data.marketplace === 'Другой маркетплейс' && data.customMarketplace
+  const otherMarketplace = MARKETPLACE_OTHER_I18N[lang]
+  const isOtherMarketplace = Object.values(MARKETPLACE_OTHER_I18N).includes(data.marketplace)
+  const effectiveMarketplace = isOtherMarketplace && data.customMarketplace
       ? data.customMarketplace
       : data.marketplace
+  const countries = COUNTRIES_I18N[lang]
+  const selectedCountry = countries.find((country) => country.code === data.country)?.name || data.country
 
   async function generate() {
     if (isLoading) {
@@ -141,7 +147,7 @@ export function ClaimForm() {
           phone: data.phone,
           email: data.email,
           address: data.address,
-          country: data.country,
+          country: selectedCountry,
           marketplace: effectiveMarketplace,
           orderNumber: data.orderNumber,
           orderDate: data.orderDate,
@@ -170,7 +176,7 @@ export function ClaimForm() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             claimText: json.claim,
-            country: data.country,
+            country: selectedCountry,
             marketplace: effectiveMarketplace,
             problemType: data.problemType,
           }),
@@ -212,7 +218,7 @@ export function ClaimForm() {
                 type="text"
                 value={data.fullName}
                 onChange={(e) => update('fullName', e.target.value)}
-                placeholder="Иванов Иван Иванович"
+                placeholder={t('claim.fullName.ph')}
                 className={inputClass}
               />
             </Field>
@@ -221,7 +227,7 @@ export function ClaimForm() {
                 type="tel"
                 value={data.phone}
                 onChange={(e) => update('phone', e.target.value)}
-                placeholder="+7 700 123 45 67"
+                placeholder={t('claim.phone.ph')}
                 className={inputClass}
               />
             </Field>
@@ -239,7 +245,7 @@ export function ClaimForm() {
                 type="text"
                 value={data.address}
                 onChange={(e) => update('address', e.target.value)}
-                placeholder="г. Алматы, ул. ... , д. ..."
+                placeholder={t('claim.address.ph')}
                 className={inputClass}
               />
             </Field>
@@ -255,8 +261,8 @@ export function ClaimForm() {
                 className={inputClass}
               >
                 <option value="">{t('claim.country.select')}</option>
-                {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.name}>
+                {countries.map((c) => (
+                  <option key={c.code} value={c.code}>
                     {c.flag} {c.name}
                   </option>
                 ))}
@@ -271,23 +277,23 @@ export function ClaimForm() {
                 <option value="">{t('claim.marketplace.select')}</option>
                 {MARKETPLACES.map((m) => (
                   <option key={m} value={m}>
-                    {m}
+                    {m === 'Другой маркетплейс' ? otherMarketplace : m}
                   </option>
                 ))}
               </select>
             </Field>
-            {data.marketplace === 'Другой маркетплейс' && (
-              <Field label="Название маркетплейса">
+            {data.marketplace === otherMarketplace && (
+              <Field label={t('claim.marketplace.customName')}>
                 <input
                   type="text"
                   value={data.customMarketplace}
                   onChange={(e) => update('customMarketplace', e.target.value)}
-                  placeholder="Введите название"
+                  placeholder={t('claim.marketplace.customPh')}
                   className={inputClass}
                 />
               </Field>
             )}
-            <Field label="Номер заказа">
+            <Field label={t('claim.orderNumber')}>
               <input
                 type="text"
                 value={data.orderNumber}
@@ -296,7 +302,7 @@ export function ClaimForm() {
                 className={inputClass}
               />
             </Field>
-            <Field label="Дата заказа">
+            <Field label={t('claim.orderDate')}>
               <input
                 type="date"
                 value={data.orderDate}
@@ -304,7 +310,7 @@ export function ClaimForm() {
                 className={inputClass}
               />
             </Field>
-            <Field label="Дата получения">
+            <Field label={t('claim.receiveDate')}>
               <input
                 type="date"
                 value={data.receiveDate}
@@ -312,16 +318,16 @@ export function ClaimForm() {
                 className={inputClass}
               />
             </Field>
-            <Field label="Название товара">
+            <Field label={t('claim.productName')}>
               <input
                 type="text"
                 value={data.productName}
                 onChange={(e) => update('productName', e.target.value)}
-                placeholder="Смартфон Samsung Galaxy..."
+                placeholder={t('claim.productName.ph')}
                 className={inputClass}
               />
             </Field>
-            <Field label="Стоимость товара">
+            <Field label={t('claim.productPrice')}>
               <input
                 type="text"
                 value={data.productPrice}
@@ -358,7 +364,7 @@ export function ClaimForm() {
                     )}
                     aria-hidden="true"
                   />
-                  <span className="text-sm font-medium text-foreground">{card.label}</span>
+                  <span className="text-sm font-medium text-foreground">{PROBLEM_LABELS_I18N[card.id][lang]}</span>
                 </button>
               )
             })}
@@ -370,7 +376,7 @@ export function ClaimForm() {
                 value={data.description}
                 onChange={(e) => update('description', e.target.value)}
                 rows={5}
-                placeholder="Например: заказал телефон, при получении экран оказался с трещиной, продавец отказывается принимать возврат..."
+                placeholder={t('claim.description.ph')}
                 className={cn(inputClass, 'resize-y')}
               />
             </Field>
@@ -443,7 +449,7 @@ export function ClaimForm() {
                   ) : (
                     <Copy className="h-3.5 w-3.5" aria-hidden="true" />
                   )}
-                  {shareCopied ? 'Готово' : 'Копировать'}
+                  {shareCopied ? t('result.done') : t('common.copy')}
                 </button>
               </div>
             </div>
@@ -468,7 +474,7 @@ export function ClaimForm() {
       {showChat && result && (
         <AiChat
           context={{
-            country: data.country,
+            country: selectedCountry,
             marketplace: effectiveMarketplace,
             orderNumber: data.orderNumber,
             productName: data.productName,

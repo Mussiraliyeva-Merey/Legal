@@ -1,4 +1,5 @@
-import { PROBLEM_LABELS, type ProblemType } from '@/lib/constants'
+import { type ProblemType } from '@/lib/constants'
+import { PROBLEM_LABELS_I18N } from '@/lib/i18n-content'
 
 export const maxDuration = 60
 
@@ -100,33 +101,40 @@ const SYSTEM_PROMPT = `You are a specialized legal assistant for consumer protec
 - Подпись должна содержать линию для подписи и ФИО пользователя.`
 
 function buildPrompt(data: GenerateRequest): string {
-  const problemLabel = data.problemType ? PROBLEM_LABELS[data.problemType] : 'не указана'
+  const language = data.lang || 'ru'
+  const problemLabel = data.problemType ? PROBLEM_LABELS_I18N[data.problemType][language] : ({ ru: 'не указана', kk: 'көрсетілмеген', en: 'not specified' }[language])
   const locale = data.lang === 'kk' ? 'kk-KZ' : data.lang === 'en' ? 'en-US' : 'ru-RU'
   const today = new Date().toLocaleDateString(locale)
 
-  return `СТРАНА: ${data.country || 'не указана'}
-МАРКЕТПЛЕЙС: ${data.marketplace || 'не указан'}
+  const labels = language === 'en'
+    ? { country: 'COUNTRY', marketplace: 'MARKETPLACE', user: 'USER DETAILS', order: 'ORDER DETAILS', problem: 'PROBLEM', category: 'Category', description: 'User description' }
+    : language === 'kk'
+      ? { country: 'ЕЛ', marketplace: 'МАРКЕТПЛЕЙС', user: 'ПАЙДАЛАНУШЫ ДЕРЕКТЕРІ', order: 'ТАПСЫРЫС ДЕРЕКТЕРІ', problem: 'МӘСЕЛЕ', category: 'Санат', description: 'Пайдаланушы сипаттамасы' }
+      : { country: 'СТРАНА', marketplace: 'МАРКЕТПЛЕЙС', user: 'ДАННЫЕ ПОЛЬЗОВАТЕЛЯ', order: 'ДАННЫЕ ЗАКАЗА', problem: 'ПРОБЛЕМА', category: 'Категория', description: 'Описание пользователя' }
 
-ДАННЫЕ ПОЛЬЗОВАТЕЛЯ:
-- ФИО: ${data.fullName || '[не указано]'}
-- Телефон: ${data.phone || '[не указан]'}
-- Email: ${data.email || '[не указан]'}
-- Адрес: ${data.address || '[не указан]'}
+  return `${labels.country}: ${data.country || 'not specified'}
+${labels.marketplace}: ${data.marketplace || 'not specified'}
 
-ДАННЫЕ ЗАКАЗА:
-- Номер заказа: ${data.orderNumber || '[не указан]'}
-- Дата заказа: ${data.orderDate || '[не указана]'}
-- Дата получения: ${data.receiveDate || '[не указана]'}
-- Наименование товара: ${data.productName || '[не указан��]'}
-- Стоимость товара: ${data.productPrice || '[не указана]'}
+${labels.user}:
+- Full name: ${data.fullName || '[not provided]'}
+- Phone: ${data.phone || '[not provided]'}
+- Email: ${data.email || '[not provided]'}
+- Address: ${data.address || '[not provided]'}
 
-ПРОБЛЕМА:
-- Категория: ${problemLabel}
-- Описание пользователя: ${data.description || '(детали не описаны — сформулируй общие обстоятельства на основе категории проблемы)'}
+${labels.order}:
+- Order number: ${data.orderNumber || '[not provided]'}
+- Order date: ${data.orderDate || '[not provided]'}
+- Receipt date: ${data.receiveDate || '[not provided]'}
+- Product: ${data.productName || '[not provided]'}
+- Price: ${data.productPrice || '[not provided]'}
 
-Текущая дата для документа: ${today}
+${labels.problem}:
+- ${labels.category}: ${problemLabel}
+- ${labels.description}: ${data.description || '[not provided]'}
 
-ЗАДАЧА: Сформируй ��олностью готовую официальную претензию по структуре, описанной в системном промпте. Вставь все данные пользователя и заказа в соответствующие поля. Определи применимое законодательство, статьи закона, требования и сроки. Если маркетплейс находится за пределами страны пользователя — укажи статус трансграничного спора.`
+Current date: ${today}
+
+TASK: Generate a complete official complaint in the selected language (${language}). Use the structure from the system instructions and include all supplied user and order data.`
 }
 
 export async function POST(req: Request) {
