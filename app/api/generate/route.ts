@@ -1,3 +1,4 @@
+import { callGemini } from '@/lib/gemini'
 import { type ProblemType } from '@/lib/constants'
 import { PROBLEM_LABELS_I18N } from '@/lib/i18n-content'
 
@@ -158,12 +159,7 @@ export async function POST(req: Request) {
 
     let geminiResponse: Response
     try {
-      geminiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+      geminiResponse = await callGemini(apiKey, {
             contents: [
               {
                 parts: [
@@ -176,10 +172,7 @@ export async function POST(req: Request) {
               maxOutputTokens: 16384,
               thinkingConfig: { thinkingLevel: 'low' },
             },
-          }),
-          signal: controller.signal,
-        },
-      )
+          }, controller.signal)
     } catch (fetchErr) {
       clearTimeout(timeout)
       if ((fetchErr as Error).name === 'AbortError') {
@@ -193,23 +186,11 @@ export async function POST(req: Request) {
     clearTimeout(timeout)
 
     if (!geminiResponse.ok) {
-      const providerError = await geminiResponse.json().catch(() => null)
-      const providerStatus = providerError?.error?.status || 'UNKNOWN'
-      console.error('[generate] Gemini error:', geminiResponse.status, providerStatus, providerError?.error?.message)
-      return Response.json({ error: 'AI-провайдер отклонил запрос.', providerHttpStatus: geminiResponse.status, providerStatus, providerMessage: providerError?.error?.message }, { status: 502 })
-
-      const errorText = await geminiResponse.text().catch(() => '')
-      if (geminiResponse.status === 429) {
-        return Response.json(
-          { error: 'Сервис перегружен. Попробуйте через минуту.' },
-          { status: 429 },
-        )
+      console.error('[gemini] request failed:', geminiResponse.status)
+      if ([429, 503].includes(geminiResponse.status)) {
+        return Response.json({ error: 'AI-сервис временно перегружен. Попробуйте через минуту.' }, { status: 503 })
       }
-      console.error('[gemini] error:', geminiResponse.status, errorText)
-      return Response.json(
-        { error: 'Не удалось сформировать претензию. Попробуйте ещё раз.' },
-        { status: 502 },
-      )
+      return Response.json({ error: 'Не удалось сформировать претензию. Обратитесь к администратору сайта.' }, { status: 502 })
     }
 
     const geminiData = await geminiResponse.json()
