@@ -106,7 +106,7 @@ export function ClaimForm() {
   }
 
   const effectiveMarketplace =
-    data.marketplace === MARKETPLACE_OTHER_I18N[lang] && data.customMarketplace
+    data.marketplace === 'Другой маркетплейс' && data.customMarketplace
       ? data.customMarketplace
       : data.marketplace
 
@@ -202,14 +202,12 @@ export function ClaimForm() {
   return (
     <div className="flex flex-col gap-6">
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="mb-1 text-xl font-bold text-foreground">Создание претензии</h2>
-        <p className="mb-6 text-sm text-muted-foreground">
-          Заполните только факты о себе, заказе и проблеме. Юридическую часть сформирует система.
-        </p>
+        <h2 className="mb-1 text-xl font-bold text-foreground">{t('claim.title')}</h2>
+        <p className="mb-6 text-sm text-muted-foreground">{t('claim.subtitle')}</p>
 
-        <Section number={1} title="Личные данные">
+        <Section number={1} title={t('claim.section1')}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="ФИО" required>
+            <Field label={t('claim.fullName')} required>
               <input
                 type="text"
                 value={data.fullName}
@@ -218,7 +216,7 @@ export function ClaimForm() {
                 className={inputClass}
               />
             </Field>
-            <Field label="Телефон">
+            <Field label={t('claim.phone')}>
               <input
                 type="tel"
                 value={data.phone}
@@ -227,7 +225,7 @@ export function ClaimForm() {
                 className={inputClass}
               />
             </Field>
-            <Field label="Email">
+            <Field label={t('claim.email')}>
               <input
                 type="email"
                 value={data.email}
@@ -236,7 +234,7 @@ export function ClaimForm() {
                 className={inputClass}
               />
             </Field>
-            <Field label="Адрес">
+            <Field label={t('claim.address')}>
               <input
                 type="text"
                 value={data.address}
@@ -248,15 +246,15 @@ export function ClaimForm() {
           </div>
         </Section>
 
-        <Section number={2} title="Данные заказа">
+        <Section number={2} title={t('claim.section2')}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Страна" required>
+            <Field label={t('claim.country')} required>
               <select
                 value={data.country}
                 onChange={(e) => update('country', e.target.value)}
                 className={inputClass}
               >
-                <option value="">Выберите страну</option>
+                <option value="">{t('claim.country.select')}</option>
                 {COUNTRIES.map((c) => (
                   <option key={c.code} value={c.name}>
                     {c.flag} {c.name}
@@ -264,13 +262,13 @@ export function ClaimForm() {
                 ))}
               </select>
             </Field>
-            <Field label="Маркетплейс" required>
+            <Field label={t('claim.marketplace')} required>
               <select
                 value={data.marketplace}
                 onChange={(e) => update('marketplace', e.target.value)}
                 className={inputClass}
               >
-                <option value="">Выберите маркетплейс</option>
+                <option value="">{t('claim.marketplace.select')}</option>
                 {MARKETPLACES.map((m) => (
                   <option key={m} value={m}>
                     {m}
@@ -335,7 +333,7 @@ export function ClaimForm() {
           </div>
         </Section>
 
-        <Section number={3} title="Проблема">
+        <Section number={3} title={t('claim.section3')}>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PROBLEM_CARDS.map((card) => {
               const Icon = PROBLEM_ICONS[card.icon] || HelpCircle
@@ -367,7 +365,7 @@ export function ClaimForm() {
           </div>
 
           <div className="mt-6">
-            <Field label="Кратко опишите, что произошло" required>
+            <Field label={t('claim.description')} required>
               <textarea
                 value={data.description}
                 onChange={(e) => update('description', e.target.value)}
@@ -391,12 +389,12 @@ export function ClaimForm() {
             ) : (
               <FileSignature className="h-5 w-5" aria-hidden="true" />
             )}
-            {isLoading ? 'Формируем претензию...' : 'Сформировать претензию'}
+            {isLoading ? t('claim.generating') : t('claim.generate')}
           </button>
         </div>
         {!canSubmit && !isLoading && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Заполните ФИО, страну, маркетплейс, выберите проблему и опишите ситуацию.
+            {t('claim.fillRequired')}
           </p>
         )}
       </div>
@@ -412,7 +410,7 @@ export function ClaimForm() {
       )}
 
       {result && !isLoading && showReview && (
-        <ReviewPrompt source="complaint" submissionKey={reviewKeyRef.current} title="Как вам результат?" onDone={() => setShowReview(false)} />
+        <ReviewPrompt source="complaint" submissionKey={reviewKeyRef.current} title={t('claim.reviewTitle')} onDone={() => setShowReview(false)} />
       )}
 
       {result && !isLoading && (
@@ -421,7 +419,7 @@ export function ClaimForm() {
             <div className="flex flex-1 flex-col gap-2 rounded-xl border border-border bg-card p-3 shadow-sm sm:flex-row sm:items-center">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Share2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span className="font-medium text-foreground">Ссылка на претензию:</span>
+                <span className="font-medium text-foreground">{t('claim.shareLink')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -453,7 +451,7 @@ export function ClaimForm() {
           {saving && (
             <div className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              Сохраняем...
+              {t('claim.saving')}
             </div>
           )}
           <button
@@ -462,7 +460,7 @@ export function ClaimForm() {
             className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-secondary active:translate-y-px"
           >
             <MessageCircleQuestion className="h-5 w-5" aria-hidden="true" />
-            {showChat ? 'Скрыть чат' : 'Консультация AI'}
+            {showChat ? t('claim.hideChat') : t('claim.aiConsultation')}
           </button>
         </div>
       )}

@@ -25,7 +25,7 @@ const LANG_INSTRUCTIONS: Record<NonNullable<GenerateRequest['lang']>, string> = 
   en: 'IMPORTANT: generate the entire document and all explanations only in English.',
 }
 
-const SYSTEM_PROMPT = `Ты — специализированный юридический ассистент по защите прав потребителей на маркетплейсах.
+const SYSTEM_PROMPT = `You are a specialized legal assistant for consumer protection in marketplace purchases.
 Твоя задача — сформировать ПОЛНОСТЬЮ ГОТОВУЮ официальную претензию на основе фактов, введённых пользователем.
 
 ПРАВИЛА:
@@ -117,7 +117,7 @@ function buildPrompt(data: GenerateRequest): string {
 - Номер заказа: ${data.orderNumber || '[не указан]'}
 - Дата заказа: ${data.orderDate || '[не указана]'}
 - Дата получения: ${data.receiveDate || '[не указана]'}
-- Наименование товара: ${data.productName || '[не указано]'}
+- Наименование товара: ${data.productName || '[не указан��]'}
 - Стоимость товара: ${data.productPrice || '[не указана]'}
 
 ПРОБЛЕМА:
@@ -150,7 +150,7 @@ export async function POST(req: Request) {
     let geminiResponse: Response
     try {
       geminiResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -216,8 +216,8 @@ export async function POST(req: Request) {
       )
     }
 
-    if (!/Дата\s*:/i.test(text) || !/Подпись\s*:/i.test(text)) {
-      console.error('[generate] missing final section')
+    if (text.trim().length < 200) {
+      console.error('[generate] response is too short')
       return Response.json({ error: 'Претензия сформировалась не полностью. Попробуйте ещё раз.' }, { status: 502 })
     }
 
