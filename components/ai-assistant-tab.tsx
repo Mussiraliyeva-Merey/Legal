@@ -111,23 +111,23 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 sm:gap-6">
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-6">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-start gap-3 sm:items-center mb-2">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <Bot className="h-5 w-5" aria-hidden="true" />
           </span>
-          <div>
-            <h2 className="text-xl font-bold text-foreground">{t('ai.title')}</h2>
+          <div className="min-w-0">
+            <h2 className="text-lg font-bold text-foreground sm:text-xl">{t('ai.title')}</h2>
             <p className="text-sm text-muted-foreground">{t('ai.subtitle')}</p>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid gap-4 lg:gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex flex-col gap-4">
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-            <div ref={scrollRef} className="min-h-[18rem] max-h-[60svh] overflow-y-auto space-y-3 p-3 sm:max-h-[32rem] sm:p-4">
+            <div ref={scrollRef} className="min-h-[17rem] max-h-[52svh] overflow-y-auto space-y-3 p-3 sm:min-h-[18rem] sm:max-h-[32rem] sm:p-4">
               {messages.length === 0 && (
                 <div className="flex flex-col items-center gap-4 py-8 text-center">
                   <Bot className="h-12 w-12 text-muted-foreground/40" aria-hidden="true" />
@@ -139,13 +139,13 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
                 const isUser = msg.role === 'user'
                 const mp = !isUser ? detectMarketplace(msg.content) : null
                 return (
-                  <div key={i} className={cn('flex gap-2.5', isUser ? 'flex-row-reverse' : 'flex-row')}>
+                  <div key={i} className={cn('flex min-w-0 gap-2.5', isUser ? 'flex-row-reverse' : 'flex-row')}>
                     <span className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full', isUser ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground')}>
                       {isUser ? <User className="h-4 w-4" aria-hidden="true" /> : <Bot className="h-4 w-4" aria-hidden="true" />}
                     </span>
-                    <div className="flex flex-col gap-2">
-                      <div className={cn('max-w-[calc(100vw-6.5rem)] sm:max-w-[85%] rounded-2xl px-3 py-2.5 text-sm leading-relaxed sm:px-4', isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-secondary text-foreground rounded-tl-sm')}>
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                    <div className="min-w-0 flex flex-col gap-2">
+                      <div className={cn('max-w-[calc(100vw-6.5rem)] break-words sm:max-w-[85%] rounded-2xl px-3 py-2.5 text-sm leading-relaxed sm:px-4', isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-secondary text-foreground rounded-tl-sm')}>
+                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                       </div>
                       {!isUser && (
                         <div className="flex flex-wrap gap-2">
@@ -184,13 +184,13 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
               )}
             </div>
 
-            <div className="border-t border-border p-3">
+            <div className="border-t border-border p-3 sm:p-4">
               <div className="flex gap-2">
                 <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} rows={1}
                   placeholder={t('ai.placeholder')}
-                  className="flex-1 resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground outline-none ring-ring/40 transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 max-h-32" />
+                  className="max-h-32 flex-1 resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-base text-foreground outline-none ring-ring/40 transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 sm:text-sm" />
                 <button type="button" onClick={() => send(input)} disabled={isLoading || !input.trim()}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50 sm:h-10 sm:w-10"
                   aria-label={t('ai.send')}>
                   <Send className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -225,7 +225,7 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
 
         <div className="flex flex-col gap-4">
           <button onClick={() => onGoToClaim()}
-            className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90">
+            className="sticky bottom-3 z-10 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg transition hover:bg-primary/90 lg:static lg:min-h-0 lg:shadow-sm">
             <FileSignature className="h-4 w-4" aria-hidden="true" />
             {t('ai.createClaim')}
           </button>
