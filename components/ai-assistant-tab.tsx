@@ -111,7 +111,7 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-6">
+    <div className="flex min-h-[calc(100svh-8rem)] flex-col gap-3 sm:gap-6">
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-6">
         <div className="flex items-start gap-3 sm:items-center mb-2">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground">
@@ -119,15 +119,15 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
           </span>
           <div className="min-w-0">
             <h2 className="text-lg font-bold text-foreground sm:text-xl">{t('ai.title')}</h2>
-            <p className="text-sm text-muted-foreground">{t('ai.subtitle')}</p>
+            <p className="hidden text-sm text-muted-foreground sm:block">{t('ai.subtitle')}</p>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="flex flex-col gap-4">
+      <div className="grid gap-3 lg:gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 flex flex-col gap-3 sm:gap-4">
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-            <div ref={scrollRef} className="min-h-[17rem] max-h-[52svh] overflow-y-auto space-y-3 p-3 sm:min-h-[18rem] sm:max-h-[32rem] sm:p-4">
+            <div ref={scrollRef} className="h-[calc(100svh-20rem)] min-h-[19rem] max-h-[34rem] overflow-y-auto space-y-3 p-3 sm:h-auto sm:min-h-[18rem] sm:max-h-[32rem] sm:p-4">
               {messages.length === 0 && (
                 <div className="flex flex-col items-center gap-4 py-8 text-center">
                   <Bot className="h-12 w-12 text-muted-foreground/40" aria-hidden="true" />
@@ -198,7 +198,7 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
             </div>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-visible">
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
             {quickButtons.map((q) => (
               <button key={q} onClick={() => send(q)} disabled={isLoading}
                 className="shrink-0 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-foreground transition hover:border-primary/50 hover:bg-secondary disabled:opacity-50">
@@ -223,14 +223,14 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
           {consultationDone && showReview && <ReviewPrompt source="ai_assistant" submissionKey={reviewKeyRef.current} title={t('ai.reviewTitle')} onDone={() => setShowReview(false)} />}
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="order-first flex flex-col gap-3 lg:order-none lg:gap-4">
           <button onClick={() => onGoToClaim()}
-            className="sticky bottom-3 z-10 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg transition hover:bg-primary/90 lg:static lg:min-h-0 lg:shadow-sm">
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:bg-primary/90 lg:min-h-0 lg:shadow-sm">
             <FileSignature className="h-4 w-4" aria-hidden="true" />
             {t('ai.createClaim')}
           </button>
 
-          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+          <div className="hidden rounded-xl border border-border bg-card p-4 shadow-sm lg:block">
             <button onClick={() => setShowDict(!showDict)} className="flex w-full items-center justify-between text-left">
               <span className="text-sm font-semibold text-foreground">{t('dict.title')}</span>
               <ChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', showDict && 'rotate-180')} aria-hidden="true" />
@@ -238,7 +238,7 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
             {showDict && <div className="mt-4"><LegalDictionary /></div>}
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+          <div className="hidden rounded-xl border border-border bg-card p-4 shadow-sm lg:block">
             <button onClick={() => setShowHowTo(!showHowTo)} className="flex w-full items-center justify-between text-left">
               <span className="text-sm font-semibold text-foreground">{t('nav.howToUse')}</span>
               <ChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', showHowTo && 'rotate-180')} aria-hidden="true" />
