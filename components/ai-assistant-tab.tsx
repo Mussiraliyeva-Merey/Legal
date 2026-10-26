@@ -207,6 +207,14 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
             ))}
           </div>
 
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm lg:hidden">
+            <button onClick={() => setShowDict(!showDict)} className="flex w-full items-center justify-between text-left">
+              <span className="text-sm font-semibold text-foreground">{t('dict.title')}</span>
+              <ChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', showDict && 'rotate-180')} aria-hidden="true" />
+            </button>
+            {showDict && <div className="mt-4"><LegalDictionary /></div>}
+          </div>
+
           {messages.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {hintButtons.map((h) => (
