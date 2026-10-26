@@ -52,7 +52,7 @@ export function AppShell() {
               <span className="text-lg font-bold tracking-tight">Jardem AI</span>
             </button>
 
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden xl:flex items-center gap-1">
               {NAV_IDS.map((item) => {
                 const Icon = item.icon
                 const active = tab === item.id
@@ -74,7 +74,7 @@ export function AppShell() {
               })}
             </nav>
 
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden xl:flex items-center gap-2">
               <div className="relative">
                 <button
                   onClick={() => setLangMenuOpen(!langMenuOpen)}
@@ -106,7 +106,7 @@ export function AppShell() {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg hover:bg-primary-foreground/10 transition"
+              className="xl:hidden flex h-10 w-10 items-center justify-center rounded-lg hover:bg-primary-foreground/10 transition"
               aria-label={t('nav.menu')}
             >
               {mobileMenuOpen ? (
@@ -119,7 +119,7 @@ export function AppShell() {
         </div>
 
         {mobileMenuOpen && (
-          <nav className="md:hidden border-t border-primary-foreground/20 bg-primary">
+          <nav className="xl:hidden border-t border-primary-foreground/20 bg-primary">
             <div className="mx-auto max-w-6xl px-4 py-3">
               {NAV_IDS.map((item) => {
                 const Icon = item.icon
@@ -162,7 +162,7 @@ export function AppShell() {
         )}
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         {tab === 'home' && <HomeView onStart={() => switchTab('create')} />}
         {tab === 'create' && <ClaimForm />}
         {tab === 'ai-assistant' && <AiAssistantTab onGoToClaim={() => switchTab('create')} />}
@@ -174,7 +174,7 @@ export function AppShell() {
       </div>
 
       <footer className="border-t border-border bg-card mt-12">
-        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
           <p className="text-center text-xs leading-relaxed text-muted-foreground">
             {t('footer.disclaimer')}
           </p>

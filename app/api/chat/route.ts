@@ -28,6 +28,7 @@ const LANG_INSTRUCTIONS: Record<string, string> = {
 }
 
 const SYSTEM_PROMPT = `You are a specialized AI assistant for consumer protection in marketplace purchases.
+Always write every part of your response in the language explicitly requested below. Do not mix languages, including headings, examples, or fallback messages.
 Твоя задача — помогать людям решать проблемы с покупками, возвратами, продавцами и маркетплейсами.
 
 ### ТЕМА — отвечай ТОЛЬКО на вопросы, связанные с:
@@ -119,9 +120,10 @@ export async function POST(req: Request) {
       )
     }
 
-    const { messages, context, lang }: ChatRequest = await req.json()
+    const { messages, context, lang: requestedLang }: ChatRequest = await req.json()
+    const lang = requestedLang === 'kk' || requestedLang === 'en' || requestedLang === 'ru' ? requestedLang : 'ru'
     const contextBlock = buildContext(context)
-    const langInstruction = LANG_INSTRUCTIONS[lang || 'ru'] || LANG_INSTRUCTIONS.ru
+    const langInstruction = LANG_INSTRUCTIONS[lang]
 
     const contents = messages.map((m) => ({
       role: m.role === 'user' ? 'user' : 'model',
@@ -171,7 +173,7 @@ export async function POST(req: Request) {
     const geminiData = await geminiResponse.json()
     const text =
       (geminiData?.candidates?.[0]?.content?.parts ?? []).filter((p: { text?: string; thought?: boolean }) => !p.thought && typeof p.text === 'string').map((p: { text: string }) => p.text).join('') ??
-      
+
       ''
 
     if (!text || text.trim().length === 0) {

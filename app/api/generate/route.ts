@@ -28,6 +28,7 @@ const LANG_INSTRUCTIONS: Record<NonNullable<GenerateRequest['lang']>, string> = 
 }
 
 const SYSTEM_PROMPT = `You are a specialized legal assistant for consumer protection in marketplace purchases.
+Always write the complete document, including every heading and placeholder, in the language explicitly requested below. Do not mix languages.
 Твоя задача — сформировать ПОЛНОСТЬЮ ГОТОВУЮ официальную претензию на основе фактов, введённых пользователем.
 
 ПРАВИЛА:

@@ -112,7 +112,7 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-6">
         <div className="flex items-center gap-3 mb-2">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <Bot className="h-5 w-5" aria-hidden="true" />
@@ -126,8 +126,8 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="flex flex-col gap-4">
-          <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-            <div ref={scrollRef} className="max-h-[32rem] min-h-[16rem] overflow-y-auto p-4 space-y-3">
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <div ref={scrollRef} className="min-h-[18rem] max-h-[60svh] overflow-y-auto space-y-3 p-3 sm:max-h-[32rem] sm:p-4">
               {messages.length === 0 && (
                 <div className="flex flex-col items-center gap-4 py-8 text-center">
                   <Bot className="h-12 w-12 text-muted-foreground/40" aria-hidden="true" />
@@ -144,7 +144,7 @@ export function AiAssistantTab({ onGoToClaim }: Props) {
                       {isUser ? <User className="h-4 w-4" aria-hidden="true" /> : <Bot className="h-4 w-4" aria-hidden="true" />}
                     </span>
                     <div className="flex flex-col gap-2">
-                      <div className={cn('max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed', isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-secondary text-foreground rounded-tl-sm')}>
+                      <div className={cn('max-w-[calc(100vw-6.5rem)] sm:max-w-[85%] rounded-2xl px-3 py-2.5 text-sm leading-relaxed sm:px-4', isUser ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-secondary text-foreground rounded-tl-sm')}>
                         <p className="whitespace-pre-wrap">{msg.content}</p>
                       </div>
                       {!isUser && (
